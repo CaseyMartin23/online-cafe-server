@@ -15,10 +15,11 @@ export class AuthService {
 
   async validateUser(email: string, pass: string) {
     const user = await this.userService.findByEmail(email);
+    const passwordMatch = await compare(pass, user.password);
 
-    if (user && compare(pass, user.password)) {
-      const { firstname, lastname, username, email, _id } = user;
-      return { firstname, lastname, username, email, id: _id };
+    if (user && passwordMatch) {
+      const { firstname, lastname, email, _id } = user;
+      return { firstname, lastname, email, id: _id };
     }
     return null;
   }
@@ -38,8 +39,8 @@ export class AuthService {
 
     if (!existingUser) {
       const hashedPass = await hash(password, saltRounds);
-      const { firstname, lastname, username, email } = await this.userService.create({ ...rest, password: hashedPass });
-      return { firstname, lastname, username, email };
+      const { firstname, lastname, email } = await this.userService.create({ ...rest, password: hashedPass });
+      return { firstname, lastname, email };
     }
 
     throw new HttpException({
