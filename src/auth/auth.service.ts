@@ -24,7 +24,12 @@ export class AuthService {
 
   login(user: any) {
     const token = this.jwtService.sign(
-      { email: user.email, sub: user.id },
+      {
+        sub: user.id,
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname
+      },
       { secret: this.configService.get("JWT_SECRET_KEY") }
     );
     return { token };
