@@ -14,8 +14,8 @@ export class User {
   @Prop(String)
   email: string;
 
-  @Prop([String])
-  roles: string[];
+  @Prop(Boolean)
+  isAdmin: boolean = false;
 
   @Prop(String)
   password: string;
