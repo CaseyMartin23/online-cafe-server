@@ -5,7 +5,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { CaslModule } from './casl/casl.module';
+import { CaslModule } from './auth/casl/casl.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { DeliveryAddressesModule } from './deliveryAddresses/deliveryAddresses.module';
