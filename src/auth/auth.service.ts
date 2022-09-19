@@ -16,8 +16,8 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
     if (user && await compare(password, user.password)) {
-      const { firstname, lastname, email, _id } = user;
-      return { firstname, lastname, email, id: _id };
+      const { firstName, lastName, email, _id } = user;
+      return { firstName, lastName, email, id: _id };
     }
     return null;
   }
@@ -27,8 +27,8 @@ export class AuthService {
       {
         sub: user.id,
         email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname
+        firstName: user.firstName,
+        lastName: user.lastName
       },
       { secret: this.configService.get("JWT_SECRET_KEY") }
     );
@@ -42,8 +42,8 @@ export class AuthService {
 
     if (!existingUser) {
       const hashedPass = await hash(password, saltRounds);
-      const { firstname, lastname, email } = await this.userService.create({ ...rest, password: hashedPass });
-      return { firstname, lastname, email };
+      const { firstName, lastName, email } = await this.userService.create({ ...rest, password: hashedPass });
+      return { firstName, lastName, email };
     }
 
     throw new HttpException({
