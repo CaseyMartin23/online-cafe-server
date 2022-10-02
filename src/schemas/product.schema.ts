@@ -27,6 +27,9 @@ export class Product {
   @Prop({ type: MongoSchema.Types.ObjectId, ref: "User" })
   createdBy: User;
 
+  @Prop(Boolean)
+  isPublished: Boolean = false;
+
   @Prop(Date)
   dateCreated: Date = new Date();
 
