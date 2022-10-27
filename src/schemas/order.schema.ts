@@ -23,15 +23,6 @@ export class Order {
   @Prop(String)
   signedBy: string;
 
-  @Prop({ type: [{ type: MongoSchema.Types.ObjectId, ref: "Product" }] })
-  products: Product[];
-
-  @Prop({ type: MongoSchema.Types.ObjectId, ref: "DeliveryAddress" })
-  deliveryAddress: DeliveryAddress;
-
-  @Prop({ type: MongoSchema.Types.ObjectId, ref: "PaymentMethod" })
-  paymentMethod: PaymentMethod;
-
   @Prop(String)
   deliveryMethod: string;
 }

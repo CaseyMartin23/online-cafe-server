@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { hash, compare } from "bcrypt";
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -30,9 +31,12 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName
       },
-      { secret: this.configService.get("JWT_SECRET_KEY") }
+      {
+        secret: this.configService.get("JWT_SECRET_KEY"),
+        expiresIn: this.configService.get("JWT_TOKEN_EXPIRATION")
+      }
     );
-    return { token };
+    return { token, userId: user.id };
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
