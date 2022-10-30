@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
@@ -23,36 +23,81 @@ export class AuthService {
     return null;
   }
 
-  login(user: any) {
-    const token = this.jwtService.sign(
-      {
-        sub: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName
-      },
-      {
-        secret: this.configService.get("JWT_SECRET_KEY"),
-        expiresIn: this.configService.get("JWT_TOKEN_EXPIRATION")
-      }
-    );
-    return { token, userId: user.id };
+  async logout(userId: string) {
+    return this.userService.update(userId, { refreshToken: null })
+  }
+
+  async login(user: any) {
+    const { id, email } = user;
+    try {
+      const tokens = await this.getTokens(id, email);
+      await this.updateRefreshToken(id, tokens.refreshToken)
+      return tokens;
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
-    const saltRounds = Number(this.configService.get("BCRYPT_SALT_ROUNDS"));
     const { password, ...rest } = registerUserDto;
     const existingUser = await this.userService.findByEmail(rest.email)
 
-    if (!existingUser) {
-      const hashedPass = await hash(password, saltRounds);
-      const { firstName, lastName, email } = await this.userService.create({ ...rest, password: hashedPass });
-      return { firstName, lastName, email };
+    if (existingUser) {
+      throw new HttpException({
+        status: HttpStatus.CONFLICT,
+        error: "Email already used!",
+      }, HttpStatus.CONFLICT)
     }
 
-    throw new HttpException({
-      status: HttpStatus.CONFLICT,
-      error: "Email already used!",
-    }, HttpStatus.CONFLICT)
+    const hashedPass = await this.hashData(password);
+    const { id, email } = await this.userService.create({
+      ...rest,
+      password: hashedPass,
+      refreshToken: null
+    });
   }
+
+  async refreshUserTokens(userId: string, refreshToken: string) {
+    const user = await this.userService.findOne(userId);
+    if (!user || !user.refreshToken) throw new ForbiddenException("Access Denied");
+
+    const isValidToken = await compare(refreshToken, user.refreshToken);
+    if (!isValidToken) throw new ForbiddenException("Access Denied");
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refreshToken)
+    return tokens;
+  }
+
+  async getTokens(userId: string, email: string) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        {
+          secret: this.configService.get("ACCESS_TOKEN_SECRET"),
+          expiresIn: this.configService.get("ACCESS_TOKEN_EXPIRATION"),
+        }
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        {
+          secret: this.configService.get("REFRESH_TOKEN_SECRET"),
+          expiresIn: this.configService.get("REFRESH_TOKEN_EXPIRATION")
+        }
+      ),
+    ])
+
+    return { accessToken, refreshToken }
+  }
+
+  async hashData(data: string) {
+    const saltRounds = Number(this.configService.get("BCRYPT_SALT_ROUNDS"));
+    return await hash(data, saltRounds);
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const hashedToken = await this.hashData(refreshToken);
+    await this.userService.update(userId, { refreshToken: hashedToken });
+  }
+
 }

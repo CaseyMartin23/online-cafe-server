@@ -10,9 +10,9 @@ export class RegisterUserDto {
   @IsEmail()
   email: string;
 
-  @IsBoolean()
-  isAdmin: boolean = false;
-
   @IsString()
   password: string;
+
+  @IsBoolean()
+  isAdmin: boolean = false;
 }

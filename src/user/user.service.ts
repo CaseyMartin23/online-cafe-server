@@ -20,7 +20,6 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    // Validate ObjectId
     return await this.userModel.findById(id);
   }
 
@@ -29,7 +28,7 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+    return await this.userModel.updateOne({ id }, updateUserDto);
   }
 
   async remove(id: string) {
