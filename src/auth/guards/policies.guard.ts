@@ -1,18 +1,15 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Product } from 'src/schemas/product.schema';
-import { UserService } from 'src/user/user.service';
 import { Action } from '../casl.action';
 import { AppAbility, CaslAbilityFactory } from '../casl/casl-ability.factory';
 
+type PolicyHandlerCallback = (ability: AppAbility) => boolean;
 interface IPolicyHandler {
-  handle(ability: AppAbility): boolean;
+  handle: PolicyHandlerCallback;
 }
 
-type PolicyHandlerCallback = (ability: AppAbility) => boolean;
-
 export type PolicyHandler = IPolicyHandler | PolicyHandlerCallback;
-
 export const CHECK_POLICIES_KEY = 'check_policy';
 export const CheckPolicies = (...handlers: PolicyHandler[]) => SetMetadata(CHECK_POLICIES_KEY, handlers);
 

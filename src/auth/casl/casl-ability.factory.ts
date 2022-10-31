@@ -21,16 +21,13 @@ export class CaslAbilityFactory {
   constructor(private userService: UserService) { }
   async createForUser(user: RequestUser) {
     const fullUser = await this.userService.findOne(user.sub)
-    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
+    const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
     if (fullUser.isAdmin) {
       can(Action.Manage, 'all');
     } else {
       can(Action.Read, 'all');
     }
-
-    // can(Action.Update, Product, {  });
-    // cannot(Action.Delete, Product, { isPublished: true });
 
     return build({
       detectSubjectType: (item) => {
