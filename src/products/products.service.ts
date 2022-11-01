@@ -10,6 +10,7 @@ export class ProductsService {
   }
 
   findByPage(index: string) {
+    console.log({ index })
     return `This action returns all products`;
   }
 

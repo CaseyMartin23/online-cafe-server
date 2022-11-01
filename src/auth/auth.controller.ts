@@ -1,6 +1,4 @@
-import { Controller, Request, Post, UseGuards, Body, Get, UsePipes, ValidationPipe, Response } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
-
+import { Controller, Request, Post, UseGuards, Body, Get, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
@@ -9,44 +7,42 @@ import { RefreshTokenGuard } from './guards/refreshToken.guard';
 
 @Controller("auth")
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private userService: UserService,
-  ) { }
+  constructor(private authService: AuthService) { }
 
   @UseGuards(AccessTokenGuard)
   @Get("logout")
   async logout(@Request() req) {
-    await this.authService.logout(req.user.sub)
-    return { success: true }
+    return await this.authService.logout(req.user.sub);
   }
 
   @UseGuards(LocalAuthGuard)
   @Post("login")
-  async login(@Request() req, @Response() res) {
-    const tokens = await this.authService.login(req.user);
-    return res.send({ success: true, tokens });
+  async login(@Request() req) {
+    return await this.authService.login(req.user);
   }
 
   @Post("register")
   @UsePipes(new ValidationPipe({ transform: true }))
-  async register(@Response() res, @Body() registerUserDto: RegisterUserDto) {
-    await this.authService.registerUser(registerUserDto)
-    return res.send({ success: true })
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    return await this.authService.registerUser(registerUserDto);
   }
 
   @UseGuards(RefreshTokenGuard)
   @Get("refresh")
-  async refreshUserTokens(@Request() req, @Response() res) {
+  async refreshUserTokens(@Request() req) {
     const user = req.user;
-    const tokens = await this.authService.refreshUserTokens(user.sub, user.refreshToken)
-    return res.send({ success: true, tokens })
+    return await this.authService.refreshUserTokens(user.sub, user.refreshToken);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get("isAdmin")
+  async isAdminUser(@Request() req) {
+    return await this.authService.isAdmin(req.user.sub);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get("profile")
   async getProfile(@Request() req) {
-    const { id, firstName, lastName, email } = await this.userService.findOne(req.user.sub);
-    return { id, firstName, lastName, email };
+    return await this.authService.userProfile(req.user.sub);
   }
 }
