@@ -16,14 +16,14 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
+  }
+
+  @Get('by-page/:page-index')
+  findAll(@Param('page-index') pageIndex: string) {
+    return this.productsService.findByPage(pageIndex);
   }
 
   @UseGuards(AccessTokenGuard, PoliciesGuard)

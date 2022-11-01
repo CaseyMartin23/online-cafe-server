@@ -5,10 +5,11 @@ import { UpdateProductDto } from './dto/update-product.dto';
 @Injectable()
 export class ProductsService {
   create(createProductDto: CreateProductDto) {
+    console.log({ createProductDto })
     return 'This action adds a new product';
   }
 
-  findAll() {
+  findByPage(index: string) {
     return `This action returns all products`;
   }
 
