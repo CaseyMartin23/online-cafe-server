@@ -4,7 +4,7 @@ import { Product, ProductDocument, ProductSchema } from "../schemas/product.sche
 export const up = async () => {
   const db = await connectToDb();
   const ProductModel = db.model("Product", ProductSchema)
-  const numberOfProducts = 175;
+  const numberOfProducts = 247;
   const product: ProductDocument = {
     name: "Test Product",
     description: "This is test product",
