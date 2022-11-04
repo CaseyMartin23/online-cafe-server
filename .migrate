@@ -1,9 +1,0 @@
-{
-  "lastRun": null,
-  "migrations": [
-    {
-      "title": "1667551240157-add-products.ts",
-      "timestamp": null
-    }
-  ]
-}
