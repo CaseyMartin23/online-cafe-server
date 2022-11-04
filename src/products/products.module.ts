@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { CaslModule } from 'src/auth/casl/casl.module';
-import { UserModule } from 'src/user/user.module';
+import { Product, ProductSchema } from 'src/schemas/product.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [CaslModule],
+  imports: [CaslModule, MongooseModule.forFeature([{ name: Product.name, schema: ProductSchema }])],
   controllers: [ProductsController],
   providers: [ProductsService]
 })

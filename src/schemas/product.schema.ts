@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongoSchema } from 'mongoose';
-import { User } from './user.schema';
 
 export type ProductDocument = Product & Document;
 
@@ -25,16 +24,16 @@ export class Product {
   tags: string[];
 
   @Prop({ type: MongoSchema.Types.ObjectId, ref: "User" })
-  createdBy: User;
+  createdBy: string;
 
   @Prop(Boolean)
-  isPublished: Boolean = false;
+  isPublished: boolean = false;
 
   @Prop(Date)
   dateCreated: Date = new Date();
 
   @Prop(Date)
-  dateUpdated: Date;
+  dateUpdated: Date = new Date();
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

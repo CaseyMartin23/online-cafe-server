@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 
-import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CaslModule } from './auth/casl/casl.module';
@@ -23,6 +22,5 @@ import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
     DeliveryAddressesModule,
     PaymentMethodsModule
   ],
-  providers: [AppService],
 })
 export class AppModule { }

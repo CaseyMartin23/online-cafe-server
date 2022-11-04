@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { hash, compare } from "bcrypt";
+import { LoginUserDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -33,10 +34,10 @@ export class AuthService {
     }
   }
 
-  async login(user: any) {
-    const { id, email } = user;
+  async login(user: LoginUserDto) {
     try {
-      const { refreshToken } = await this.userService.findOne(id);
+      const { id, email, refreshToken } = await this.userService.findByEmail(user.email);
+
       if (refreshToken) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
@@ -49,11 +50,11 @@ export class AuthService {
       return { success: true, tokens };
     } catch (err) {
       console.error(err)
-      const errorResponse = err.response;
+      const { status, error } = err.response;
       return {
         success: false,
-        statusCode: errorResponse.status,
-        message: errorResponse.error
+        statusCode: status,
+        message: error
       }
     }
   }
