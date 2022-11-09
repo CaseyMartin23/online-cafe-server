@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
-import { hash, compare } from "bcrypt";
+import { hash, compare } from "../utils/passwordHashing";
 import { LoginUserDto } from './dto/login.dto';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
-    if (user && await compare(password, user.password)) {
+    if (user && compare(user.password, password)) {
       const { firstName, lastName, email, _id } = user;
       return { firstName, lastName, email, id: _id };
     }
@@ -71,7 +71,7 @@ export class AuthService {
         }, HttpStatus.CONFLICT)
       }
 
-      const hashedPass = await this.hashData(password);
+      const hashedPass = hash(password);
       await this.userService.create({
         ...rest,
         password: hashedPass,
@@ -115,7 +115,7 @@ export class AuthService {
       const user = await this.userService.findOne(userId);
       if (!user || !user.refreshToken) throw new ForbiddenException("Access Denied");
 
-      const isValidToken = await compare(refreshToken, user.refreshToken);
+      const isValidToken = compare(user.refreshToken, refreshToken);
       if (!isValidToken) throw new ForbiddenException("Access Denied");
 
       const tokens = await this.getTokens(user.id, user.email);
@@ -148,13 +148,8 @@ export class AuthService {
     return { accessToken, refreshToken }
   }
 
-  private async hashData(data: string) {
-    const saltRounds = Number(this.configService.get("BCRYPT_SALT_ROUNDS"));
-    return await hash(data, saltRounds);
-  }
-
   private async updateRefreshToken(userId: string, refreshToken: string) {
-    const hashedToken = await this.hashData(refreshToken);
+    const hashedToken = hash(refreshToken);
     await this.userService.update(userId, { refreshToken: hashedToken });
   }
 
