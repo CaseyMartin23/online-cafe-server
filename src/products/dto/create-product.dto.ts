@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsString, MaxLength } from "class-validator";
+import { IsString, MaxLength } from "class-validator";
 
 export class CreateProductDto {
   @IsString()

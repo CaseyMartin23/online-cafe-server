@@ -60,19 +60,27 @@ export class ProductsService {
     }
   }
 
-  private parseProducts(products: ProductDocument[]) {
-    return products.map((product) => {
+  private parseProducts(products: ProductDocument[] | ProductDocument) {
+    const arrayOfProducts = Array.isArray(products) ? products : [products];
+    return arrayOfProducts.map((product) => {
       const { createdBy, ...rest } = product.toObject();
       return rest
     })
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const foundProduct = await this.productModel.findById(id);
+    return this.parseProducts(foundProduct);
   }
 
-  update(id: string, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductInfo: UpdateProductDto) {
+    await this.productModel.findByIdAndUpdate(id, {
+      $set: {
+        ...updateProductInfo,
+        dateUpdated: new Date(),
+      }
+    });
+    return await this.findOne(id);
   }
 
   remove(id: string) {

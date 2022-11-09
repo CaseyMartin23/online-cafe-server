@@ -22,20 +22,19 @@ export class ProductsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    console.log("entered findOne")
-    return this.productsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.productsService.findOne(id);
   }
 
   @UseGuards(AccessTokenGuard, PoliciesGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(id, updateProductDto);
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    return await this.productsService.update(id, updateProductDto);
   }
 
   @UseGuards(AccessTokenGuard, PoliciesGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.productsService.remove(id);
   }
 }

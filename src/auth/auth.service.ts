@@ -17,7 +17,8 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
-    if (user && compare(user.password, password)) {
+    const isMatch = compare(user.password, password);
+    if (user && isMatch) {
       const { firstName, lastName, email, _id } = user;
       return { firstName, lastName, email, id: _id };
     }
@@ -37,7 +38,6 @@ export class AuthService {
   async login(user: LoginUserDto) {
     try {
       const { id, email, refreshToken } = await this.userService.findByEmail(user.email);
-
       if (refreshToken) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
