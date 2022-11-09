@@ -34,8 +34,8 @@ export class ProductsService {
     }
   }
 
-  async findByPage(index: string) {
-    const intIndex = Number(`${index ? index : "0"}`)
+  async findByPage(pageNum: string) {
+    const intIndex = Number(`${pageNum || "1"}`)
     try {
       const allProducts = await this.productModel.find({});
       return {
@@ -47,13 +47,13 @@ export class ProductsService {
     }
   }
 
-  private getProductPage(index: number, products: ProductDocument[]) {
-    const pageSize = 50;
+  private getProductPage(pageNum: number, products: ProductDocument[]) {
+    const pageSize = 30;
     const totalProductLength = products.length;
-    const pageProducts = products.slice(index * pageSize, (index + 1) * pageSize);
+    const pageProducts = products.slice((pageNum - 1) * pageSize, pageNum * pageSize);
 
     return {
-      pageIndex: index,
+      pageNumber: pageNum,
       items: this.parseProducts(pageProducts),
       totalPages: Math.ceil(totalProductLength / pageSize),
       totalItems: totalProductLength,
@@ -62,7 +62,7 @@ export class ProductsService {
 
   private parseProducts(products: ProductDocument[]) {
     return products.map((product) => {
-      const { createdBy, ...rest } = product;
+      const { createdBy, ...rest } = product.toObject();
       return rest
     })
   }
