@@ -83,7 +83,8 @@ export class ProductsService {
     return await this.findOne(id);
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    await this.productModel.findByIdAndDelete(id)
+    return { success: true };
   }
 }
