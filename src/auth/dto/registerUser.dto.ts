@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsBoolean } from "class-validator"
+import { IsString, IsEmail } from "class-validator"
 import { UserTypes } from "src/schemas/user.schema";
 
 export class RegisterUserDto {
@@ -16,7 +16,4 @@ export class RegisterUserDto {
 
   @IsString()
   password: string;
-
-  @IsBoolean()
-  isAdmin: boolean = false;
 }

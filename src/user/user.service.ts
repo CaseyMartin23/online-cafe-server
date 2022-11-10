@@ -10,7 +10,12 @@ export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
 
   async create(createUserDto: CreateUserDto) {
-    const createdUser = new this.userModel(createUserDto);
+    const createdUser = new this.userModel({
+      ...createUserDto,
+      isAdmin: false,
+      dateCreated: new Date(),
+      dateUpdated: new Date(),
+    });
     return await createdUser.save();
   }
 
@@ -23,11 +28,17 @@ export class UserService {
   }
 
   async findByEmail(email: string) {
-    return this.userModel.findOne({ email });
+    if(!email) return null;
+    return await this.userModel.findOne({ email });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return await this.userModel.findByIdAndUpdate(id, updateUserDto)
+    return await this.userModel.findByIdAndUpdate(id, {
+      $set: {
+        ...updateUserDto,
+        dateUpdated: new Date()
+      }
+    })
   }
 
 }

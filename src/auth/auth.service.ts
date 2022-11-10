@@ -4,9 +4,10 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/registerUser.dto';
-import { hash, compare } from "../utils/passwordHashing";
+import { hash, compare } from "../utils/passwordHashing.util";
 import { LoginUserDto } from './dto/login.dto';
 import { UserTypes } from 'src/schemas/user.schema';
+import { responseHandler } from 'src/utils/responseHandling.util';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,21 @@ export class AuthService {
   ) { }
 
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findByEmail(email);
-    const isMatch = compare(user.password, password);
-    if (user && isMatch) {
-      const { firstName, lastName, email, _id } = user;
-      return { firstName, lastName, email, id: _id };
+    try {
+      const user = await this.userService.findByEmail(email);
+      if(user) {
+        const isMatch = compare(user.password, password);
+        if (isMatch) {
+          const { firstName, lastName, email, _id } = user;
+          return { firstName, lastName, email, id: _id };
+        }
+      }
+      
+      return null;
+    } catch (err) {
+      console.error(err)
+      return null;
     }
-    return null;
   }
 
   async logout(userId: string) {
@@ -47,6 +56,16 @@ export class AuthService {
       }
 
       const tokens = await this.getTokens(id, email);
+      await this.updateRefreshToken(id, tokens.refreshToken)
+      return responseHandler(true, tokens);
+    } catch (err) {
+      return responseHandler(false, err)
+    }
+  }
+
+  async loginAnonymousUser(id: string) {
+    try {
+      const tokens = await this.getTokens(id);
       await this.updateRefreshToken(id, tokens.refreshToken)
       return { success: true, tokens };
     } catch (err) {
@@ -75,7 +94,7 @@ export class AuthService {
         refreshToken: null,
       });
       
-      return await this.login({ id });
+      return await this.loginAnonymousUser(id);
     } catch (err) {
       console.error(err);
       return { success: false, error: err };
@@ -90,7 +109,7 @@ export class AuthService {
       if (existingUser) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
-          error: "Email already used!",
+          error: "Email already exists!",
         }, HttpStatus.CONFLICT);
       }
 
@@ -151,7 +170,7 @@ export class AuthService {
     }
   }
 
-  private async getTokens(userId: string, email: string) {
+  private async getTokens(userId: string, email?: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email },
