@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { DeliveryAddressesService } from './deliveryAddresses.service';
-import { CreateDeliveryAddressDto } from './dto/create-deliveryAddress.dto';
-import { UpdateDeliveryDto } from './dto/update-deliveryAddress.dto';
+import { CreateDeliveryAddressDto } from './dto/createDeliveryAddress.dto';
+import { UpdateDeliveryDto } from './dto/updateDeliveryAddress.dto';
 
 @Controller('delivery-addresses')
 export class DeliveryAddressesController {

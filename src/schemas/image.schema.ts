@@ -7,6 +7,10 @@ export type ImageDocument = Image & Document;
 export class Image {
   @Prop(String)
   name: string;
+
+  @Prop(String)
+  url: string;
+
 }
 
 export const ImageSchema = SchemaFactory.createForClass(Image);

@@ -1,10 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 
 export type DeliveryAddressDocument = DeliveryAddress & Document;
 
 @Schema()
 export class DeliveryAddress {
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+  userId: string;
+
   @Prop(String)
   firstName: string;
 

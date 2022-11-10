@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongoSchema } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 
 export type ProductDocument = Product & Document;
 
@@ -23,7 +23,7 @@ export class Product {
   @Prop([String])
   tags: string[];
 
-  @Prop({ type: MongoSchema.Types.ObjectId, ref: "User" })
+  @Prop({ type: SchemaTypes.ObjectId, ref: "User" })
   createdBy: string;
 
   @Prop(Boolean)

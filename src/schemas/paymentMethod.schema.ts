@@ -1,11 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongoSchema } from 'mongoose';
-import { User } from './user.schema';
+import { Document, SchemaTypes } from 'mongoose';
 
 export type PaymentMethodDocument = PaymentMethod & Document;
 
 @Schema()
 export class PaymentMethod {
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+  userId: string;
+
   @Prop(String)
   type: string;
 

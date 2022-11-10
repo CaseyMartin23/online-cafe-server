@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsString, MaxLength } from 'class-validator';
-import { CreateProductDto } from './create-product.dto';
+import { CreateProductDto } from './createProduct.dto';
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsString()

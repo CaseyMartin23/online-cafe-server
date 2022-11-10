@@ -8,7 +8,8 @@ import { CaslModule } from './auth/casl/casl.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { DeliveryAddressesModule } from './deliveryAddresses/deliveryAddresses.module';
-import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
+import { PaymentMethodsModule } from './paymentMethods/paymentMethods.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { PaymentMethodsModule } from './payment-methods/payment-methods.module';
     ProductsModule,
     OrdersModule,
     DeliveryAddressesModule,
-    PaymentMethodsModule
+    PaymentMethodsModule,
+    CartModule
   ],
 })
 export class AppModule { }

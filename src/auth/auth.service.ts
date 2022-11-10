@@ -3,9 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from 'src/user/user.service';
-import { RegisterUserDto } from './dto/register-user.dto';
+import { RegisterUserDto } from './dto/registerUser.dto';
 import { hash, compare } from "../utils/passwordHashing";
 import { LoginUserDto } from './dto/login.dto';
+import { UserTypes } from 'src/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -60,25 +61,48 @@ export class AuthService {
   }
 
   async registerUser(registerUserDto: RegisterUserDto) {
+    if(registerUserDto.type === UserTypes.anonymous) {
+      return await this.registerAnonymousUser(registerUserDto);
+    }
+    return await this.registerIdentifiedUser(registerUserDto);
+  }
+
+  private async registerAnonymousUser(userData: RegisterUserDto) {
     try {
-      const { password, ...rest } = registerUserDto;
-      const existingUser = await this.userService.findByEmail(rest.email)
+      const { id } = await this.userService.create({
+        ...userData,
+        type: UserTypes.anonymous,
+        refreshToken: null,
+      });
+      
+      return await this.login({ id });
+    } catch (err) {
+      console.error(err);
+      return { success: false, error: err };
+    }
+  }
+
+  private async registerIdentifiedUser(userData: RegisterUserDto) {
+    try {
+      const { password, ...rest } = userData;
+      const existingUser = await this.userService.findByEmail(rest.email);
 
       if (existingUser) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
           error: "Email already used!",
-        }, HttpStatus.CONFLICT)
+        }, HttpStatus.CONFLICT);
       }
 
       const hashedPass = hash(password);
       await this.userService.create({
         ...rest,
+        type: UserTypes.identified,
         password: hashedPass,
         refreshToken: null
       });
 
-      return { success: true }
+      return { success: true };
     } catch (err) {
       console.error(err);
       const errorResponse = err.response;
@@ -86,7 +110,7 @@ export class AuthService {
         success: false,
         statusCode: errorResponse.status,
         message: errorResponse.error
-      }
+      };
     }
   }
 

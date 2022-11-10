@@ -1,7 +1,7 @@
-import { Controller, Request, Post, UseGuards, Body, Get, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Request, Post, UseGuards, Body, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login.dto';
-import { RegisterUserDto } from './dto/register-user.dto';
+import { RegisterUserDto } from './dto/registerUser.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
@@ -23,7 +23,6 @@ export class AuthController {
   }
 
   @Post("register")
-  @UsePipes(new ValidationPipe({ transform: true }))
   async register(@Body() registerUserDto: RegisterUserDto) {
     return await this.authService.registerUser(registerUserDto);
   }

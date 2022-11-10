@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDeliveryAddressDto } from './dto/create-deliveryAddress.dto';
-import { UpdateDeliveryDto } from './dto/update-deliveryAddress.dto';
+import { CreateDeliveryAddressDto } from './dto/createDeliveryAddress.dto';
+import { UpdateDeliveryDto } from './dto/updateDeliveryAddress.dto';
 
 @Injectable()
 export class DeliveryAddressesService {

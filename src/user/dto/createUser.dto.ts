@@ -1,17 +1,21 @@
 import { IsString, IsEmail } from "class-validator";
+import { UserTypes } from "src/schemas/user.schema";
 
 export class CreateUserDto {
   @IsString()
-  firstName: string;
+  type: UserTypes;
 
   @IsString()
-  lastName: string;
+  firstName?: string;
+
+  @IsString()
+  lastName?: string;
 
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsString()
-  password: string;
+  password?: string;
 
   @IsString()
   refreshToken: string;
