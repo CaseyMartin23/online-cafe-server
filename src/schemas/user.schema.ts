@@ -30,6 +30,12 @@ export class User {
 
   @Prop(String)
   refreshToken: string;
+
+  @Prop(Date)
+  dateCreated: Date = new Date();
+
+  @Prop(Date)
+  dateUpdated: Date = new Date();
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
