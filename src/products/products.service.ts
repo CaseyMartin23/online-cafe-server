@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product, ProductDocument } from "../schemas/product.schema";
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
+import { responseHandler } from '../utils/responseHandling.util'
 
 @Injectable()
 export class ProductsService {
@@ -18,19 +19,18 @@ export class ProductsService {
         dateCreated: new Date(),
         dateUpdated: new Date(),
       });
-
-      return {
-        success: true,
+      const data = {
         createdProduct: {
           id,
           name,
           description,
           price
         }
-      }
+      };
+
+      return responseHandler(true, data);
     } catch (err) {
-      console.error(err);
-      return { success: false }
+      return responseHandler(false, err);
     }
   }
 
@@ -38,12 +38,10 @@ export class ProductsService {
     const intIndex = Number(`${pageNum || "1"}`)
     try {
       const allProducts = await this.productModel.find({});
-      return {
-        success: true,
-        result: this.getProductPage(intIndex, allProducts),
-      }
+      const productPage = this.getProductPage(intIndex, allProducts);
+      return responseHandler(true, { ...productPage });
     } catch (err) {
-      console.error(err)
+      return responseHandler(false, err)
     }
   }
 
@@ -69,22 +67,44 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const foundProduct = await this.productModel.findById(id);
-    return this.parseProducts(foundProduct);
+    try {
+      const foundProduct = await this.productModel.findById(id);
+
+      if(!foundProduct){
+        throw new HttpException({
+          status: HttpStatus.BAD_REQUEST,
+          error: "No product found",
+        }, HttpStatus.BAD_REQUEST);
+      }
+
+      const parsedProduct = this.parseProducts(foundProduct);
+      return responseHandler(true, { items: parsedProduct});
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
   async update(id: string, updateProductInfo: UpdateProductDto) {
-    await this.productModel.findByIdAndUpdate(id, {
-      $set: {
-        ...updateProductInfo,
-        dateUpdated: new Date(),
-      }
-    });
-    return await this.findOne(id);
+    try {
+      await this.productModel.findByIdAndUpdate(id, {
+        $set: {
+          ...updateProductInfo,
+          dateUpdated: new Date(),
+        }
+      });
+      const updatedProduct = await this.findOne(id);
+      return responseHandler(true, { ...updatedProduct });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
   async remove(id: string) {
-    await this.productModel.findByIdAndDelete(id)
-    return { success: true };
+    try {
+      await this.productModel.findByIdAndDelete(id)
+      return responseHandler(true, { message: "Successfully deleted product" });
+    } catch (err) {
+      return responseHandler(false, err)
+    }
   }
 }

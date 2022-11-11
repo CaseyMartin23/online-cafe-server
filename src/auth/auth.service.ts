@@ -20,14 +20,14 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     try {
       const user = await this.userService.findByEmail(email);
-      if(user) {
+      if (user) {
         const isMatch = compare(user.password, password);
         if (isMatch) {
           const { firstName, lastName, email, _id } = user;
           return { firstName, lastName, email, id: _id };
         }
       }
-      
+
       return null;
     } catch (err) {
       console.error(err)
@@ -38,10 +38,9 @@ export class AuthService {
   async logout(userId: string) {
     try {
       await this.userService.update(userId, { refreshToken: null })
-      return { success: true }
+      return responseHandler(true, { message: "Successfully logged out" })
     } catch (err) {
-      console.error(err);
-      return { success: false }
+      return responseHandler(false, err)
     }
   }
 
@@ -57,7 +56,7 @@ export class AuthService {
 
       const tokens = await this.getTokens(id, email);
       await this.updateRefreshToken(id, tokens.refreshToken)
-      return responseHandler(true, tokens);
+      return responseHandler(true, { tokens });
     } catch (err) {
       return responseHandler(false, err)
     }
@@ -67,41 +66,27 @@ export class AuthService {
     try {
       const tokens = await this.getTokens(id);
       await this.updateRefreshToken(id, tokens.refreshToken)
-      return { success: true, tokens };
+      return responseHandler(true, { tokens });
     } catch (err) {
-      console.error(err)
-      const { status, error } = err.response;
-      return {
-        success: false,
-        statusCode: status,
-        message: error
-      }
+      return responseHandler(false, err)
     }
   }
 
-  async registerUser(registerUserDto: RegisterUserDto) {
-    if(registerUserDto.type === UserTypes.anonymous) {
-      return await this.registerAnonymousUser(registerUserDto);
-    }
-    return await this.registerIdentifiedUser(registerUserDto);
-  }
-
-  private async registerAnonymousUser(userData: RegisterUserDto) {
+  async registerAnonymousUser() {
     try {
       const { id } = await this.userService.create({
-        ...userData,
         type: UserTypes.anonymous,
         refreshToken: null,
       });
-      
+
       return await this.loginAnonymousUser(id);
     } catch (err) {
       console.error(err);
-      return { success: false, error: err };
+      return responseHandler(false, err);
     }
   }
 
-  private async registerIdentifiedUser(userData: RegisterUserDto) {
+  async registerIdentifiedUser(userId: string, userData: RegisterUserDto) {
     try {
       const { password, ...rest } = userData;
       const existingUser = await this.userService.findByEmail(rest.email);
@@ -114,42 +99,42 @@ export class AuthService {
       }
 
       const hashedPass = hash(password);
-      await this.userService.create({
+      await this.userService.update(userId, {
         ...rest,
         type: UserTypes.identified,
         password: hashedPass,
         refreshToken: null
       });
 
-      return { success: true };
+      return responseHandler(true, { message: "Successfully registered" });
     } catch (err) {
-      console.error(err);
-      const errorResponse = err.response;
-      return {
-        success: false,
-        statusCode: errorResponse.status,
-        message: errorResponse.error
-      };
+      return responseHandler(false, err);
     }
   }
 
   async userProfile(userId: string) {
     try {
       const { id, firstName, lastName, email } = await this.userService.findOne(userId);
-      return { success: true, user: { id, firstName, lastName, email } }
+      const data = {
+        user: {
+          id,
+          firstName,
+          lastName,
+          email
+        }
+      };
+      return responseHandler(true, data)
     } catch (err) {
-      console.error(err)
-      return { success: false }
+      return responseHandler(false, err)
     }
   }
 
   async isAdmin(userId: string) {
     try {
       const { isAdmin } = await this.userService.findOne(userId);
-      return { success: true, isAdmin };
+      return responseHandler(true, { isAdmin });
     } catch (err) {
-      console.error(err);
-      return { success: false }
+      return responseHandler(false, err);
     }
   }
 
@@ -163,10 +148,9 @@ export class AuthService {
 
       const tokens = await this.getTokens(user.id, user.email);
       await this.updateRefreshToken(user.id, tokens.refreshToken)
-      return { success: true, tokens };
+      return responseHandler(true, { tokens });
     } catch (err) {
-      console.error(err)
-      return { success: false }
+      return responseHandler(false, err)
     }
   }
 

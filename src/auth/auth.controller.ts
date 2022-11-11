@@ -22,9 +22,15 @@ export class AuthController {
     return await this.authService.login(user);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Post("register")
-  async register(@Body() registerUserDto: RegisterUserDto) {
-    return await this.authService.registerUser(registerUserDto);
+  async register(@Request() req, @Body() registerUserDto: RegisterUserDto) {
+    return await this.authService.registerIdentifiedUser(req.user.sub, registerUserDto);
+  }
+
+  @Get("initial")
+  async initialRegister() {
+    return await this.authService.registerAnonymousUser();
   }
 
   @UseGuards(RefreshTokenGuard)

@@ -1,12 +1,16 @@
-export const responseHandler = (success: boolean, data: any) => {
+export const responseHandler = (success: boolean, data?: any) => {
+	let response = { success };
+
 	if (!success) {
 		const { status, error } = data.response;
 		return {
-			success,
-			statusCode: status,
-			message: error
+			...response,
+			error: {
+				statusCode: status,
+				message: error
+			}
 		}
 	}
 
-	return { success, data };
+	return data ? { ...response, data } : response;
 }
