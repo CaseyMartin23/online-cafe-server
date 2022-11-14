@@ -20,12 +20,14 @@ export class ProductsService {
         dateUpdated: new Date(),
       });
       const data = {
-        createdProduct: {
-          id,
-          name,
-          description,
-          price
-        }
+        items: [
+          {
+            id,
+            name,
+            description,
+            price
+          }
+        ]
       };
 
       return responseHandler(true, data);
@@ -92,8 +94,7 @@ export class ProductsService {
           dateUpdated: new Date(),
         }
       });
-      const updatedProduct = await this.findOne(id);
-      return responseHandler(true, { ...updatedProduct });
+      return await this.findOne(id);
     } catch (err) {
       return responseHandler(false, err);
     }
@@ -101,7 +102,17 @@ export class ProductsService {
 
   async remove(id: string) {
     try {
-      await this.productModel.findByIdAndDelete(id)
+      const foundProduct = await this.findOne(id);
+      
+      if(!foundProduct.success){
+        const { error } = foundProduct;
+        throw new HttpException({
+          status: HttpStatus.BAD_REQUEST,
+          error: error.message,
+        }, HttpStatus.BAD_REQUEST);
+      }
+
+      await this.productModel.findByIdAndDelete(id);
       return responseHandler(true, { message: "Successfully deleted product" });
     } catch (err) {
       return responseHandler(false, err)

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, UseGuards, Req, Delete } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { CartService } from './cart.service';
 import { AddItemToCartDto } from './dto/addToCart.dto';
@@ -11,7 +11,7 @@ export class CartController {
 
   @Post()
   async addToCart(@Req() req, @Body() addToCartData: AddItemToCartDto) {
-    return await this.cartService.addItemToCart(req.user.sub, addToCartData);
+    return await this.cartService.addToCart(req.user.sub, addToCartData);
   }
 
   @Get()
@@ -19,12 +19,17 @@ export class CartController {
     return await this.cartService.getCartDetails(req.user.sub);
   }
 
-  @Patch('edit')
+  @Patch('update')
   async updateCart(@Req() req, @Body() updateCartDto: UpdateCartDto) {
-    return await this.cartService.editCart(req.user.sub, updateCartDto);
+    return await this.cartService.updateCart(req.user.sub, updateCartDto);
   }
 
-  @Patch('clear')
+  @Delete('remove-item')
+  async removeCartItem(@Req() req) {
+    return await this.cartService.clearCart(req.user.sub);
+  }
+
+  @Delete('clear')
   async clearCart(@Req() req) {
     return await this.cartService.clearCart(req.user.sub);
   }

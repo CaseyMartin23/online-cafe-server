@@ -1,4 +1,14 @@
-export const responseHandler = (success: boolean, data?: any) => {
+
+export type ResponseHandlerType = {
+	success: boolean;
+	data?: any,
+	error?: {
+		statusCode: number;
+		message: any;
+	}	
+}
+
+export const responseHandler = (success: boolean, data?: any): ResponseHandlerType => {
 	let response = { success };
 
 	if (!success) {

@@ -1,10 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
+import { DefaultSchema } from './default.shema';
 
 export type OrderDocument = Order & Document;
 
 @Schema()
-export class Order {
+export class Order extends DefaultSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   userId: string;
   

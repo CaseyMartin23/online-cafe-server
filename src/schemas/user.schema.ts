@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { DefaultSchema } from './default.shema';
 
 export type UserDocument = User & Document;
 
@@ -9,7 +10,7 @@ export enum UserTypes {
 }
 
 @Schema()
-export class User {
+export class User extends DefaultSchema {
   @Prop(String)
   type: UserTypes;
 
@@ -30,12 +31,6 @@ export class User {
 
   @Prop(String)
   refreshToken: string;
-
-  @Prop(Date)
-  dateCreated: Date = new Date();
-
-  @Prop(Date)
-  dateUpdated: Date = new Date();
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

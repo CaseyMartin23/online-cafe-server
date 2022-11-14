@@ -1,4 +1,5 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { AddItemToCartDto } from './addToCart.dto';
+import {  } from 'class-validator'
 
-export class UpdateCartDto extends PartialType(AddItemToCartDto) {}
+export class UpdateCartDto {
+    // userId, productId, quantity
+}

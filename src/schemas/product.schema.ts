@@ -1,10 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
+import { DefaultSchema } from './default.shema';
 
 export type ProductDocument = Product & Document;
 
 @Schema()
-export class Product {
+export class Product extends DefaultSchema {
   @Prop(String)
   name: string;
 
@@ -28,12 +29,6 @@ export class Product {
 
   @Prop(Boolean)
   isPublished: boolean = false;
-
-  @Prop(Date)
-  dateCreated: Date = new Date();
-
-  @Prop(Date)
-  dateUpdated: Date = new Date();
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
