@@ -14,8 +14,6 @@ type UpdateCartDataType = {
   quantity: number;
 }
 
-type RawCartDataType = Cart | CartItem | Cart[] | CartItem[];
-
 @Injectable()
 export class CartService {
   constructor(
@@ -34,13 +32,7 @@ export class CartService {
         return foundProduct;
       }
 
-      if (quantity < 1) {
-        throw new HttpException({
-          status: HttpStatus.NOT_ACCEPTABLE,
-          error: "Quantity cannot be less than 1. Try remove item instead.",
-        }, HttpStatus.NOT_ACCEPTABLE)
-      }
-
+      this.checkQuantity(quantity)
       const foundCart = await this.getUserCart(userId);
       if (!foundCart.success && foundCart.error.statusCode === 404) {
         response = await this.createCartAndAddItem(userId, itemToAddData);
@@ -48,9 +40,8 @@ export class CartService {
         response = await this.addCartItemToCart(userId, itemToAddData);
       }
 
-      return !response.success ? response : responseHandler(true, response);
+      return response;
     } catch (err) {
-      console.error(err);
       return responseHandler(false, err);
     }
   }
@@ -75,28 +66,119 @@ export class CartService {
 
   async updateCartItem(userId: string, newCartItemData: UpdateCartItemDto) {
     try {
-      // update cart quantity
-      return `This action updates users cart item quantity`;
+      const { cartItemId, quantity } = newCartItemData;
+      const foundCartItem = await this.cartItemModel.findById(cartItemId);
+      const SUCCESSFUL_RESPONSE = responseHandler(true, { message: "Successfully updated cartItem" });
+
+      this.checkUserCartItemAuth(foundCartItem.userId.toString(), userId)
+      this.checkQuantity(quantity);
+      if (foundCartItem.quantity === quantity) return SUCCESSFUL_RESPONSE;
+
+      const productResponse = await this.productService.findOne(foundCartItem.productId);
+      const [foundProduct] = productResponse.data.items;
+      const allCartItems = await this.cartItemModel.find({ userId });
+      const totalExcludingUpdateCartItem = allCartItems.filter(({ id }) => id !== foundCartItem.id).reduce(
+        (prev, curr) => prev + parseFloat(curr.price),
+        parseFloat("0.00")
+      );
+      const newSubTotal = parseFloat(foundProduct.price) * quantity;
+      const newTotal = (totalExcludingUpdateCartItem + newSubTotal).toFixed(2);
+      const dateUpdated = new Date();
+
+      await this.cartItemModel.findByIdAndUpdate(foundCartItem.id, {
+        $set: {
+          quantity,
+          subTotalPrice: newSubTotal.toFixed(2),
+          dateUpdated,
+        }
+      })
+      await this.cartModel.findOneAndUpdate({ userId }, {
+        $set: {
+          totalPrice: newTotal,
+          dateUpdated,
+        }
+      })
+
+      return SUCCESSFUL_RESPONSE;
     } catch (err) {
-      console.error(err);
+      return responseHandler(false, err)
     }
   }
 
   async removeCartItem(userId: string, cartItemId: string) {
-    // remove cartItem
+    try {
+      const foundCartItem = await this.cartItemModel.findById(cartItemId);
+
+      this.checkIfCartItemExists(foundCartItem);
+      this.checkUserCartItemAuth(foundCartItem.userId.toString(), userId)
+
+      await this.cartItemModel.findByIdAndDelete(foundCartItem.id);
+
+      const allCartItems = await this.cartItemModel.find({ userId });
+      const cartItems = allCartItems.map(({ id }) => id)
+      const newTotal = allCartItems.reduce((prev, curr) => prev + parseFloat(curr.price), parseFloat("0.00"));
+      const dateUpdated = new Date();
+
+      await this.cartModel.findOneAndUpdate({ userId }, {
+        $set: {
+          cartItems,
+          totalPrice: newTotal.toFixed(2),
+          dateUpdated,
+        }
+      })
+
+      return responseHandler(true, { message: "Successfully remove cartItem" })
+    } catch (err) {
+      return responseHandler(false, err)
+    }
   }
 
   async clearCart(userId: string) {
     try {
-      return `This action removes a #${userId} cart`;
+      await this.cartItemModel.deleteMany({ userId });
+      await this.cartModel.findOneAndUpdate({ userId }, {
+        $set: {
+          cartItems: [],
+          totalPrice: "00.0",
+          dateUpdated: new Date(),
+        }
+      })
+      return responseHandler(true, { message: "Successfully cleared cart" });
     } catch (err) {
-      console.error(err);
+      return responseHandler(false, err);
+    }
+  }
+
+  private checkIfCartItemExists(cartItem: CartItem) {
+    if (!cartItem) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "No cartItem found.",
+      }, HttpStatus.NOT_FOUND)
+    }
+  }
+
+  private checkQuantity(quantity: number) {
+    if (quantity < 1) {
+      throw new HttpException({
+        status: HttpStatus.NOT_ACCEPTABLE,
+        error: "Quantity cannot be less than 1. Try remove item instead.",
+      }, HttpStatus.NOT_ACCEPTABLE)
+    }
+  }
+
+  private checkUserCartItemAuth(cartItemUserId: string, userId: string) {
+    if (cartItemUserId !== userId) {
+      throw new HttpException({
+        status: HttpStatus.UNAUTHORIZED,
+        error: "Unauthorized",
+      }, HttpStatus.UNAUTHORIZED)
     }
   }
 
   private async getCartDetails(userCart: Partial<Cart>) {
-    const { cartItems } = userCart;
-    const userCartItems = await this.cartItemModel.find({ id: { $in: cartItems } });
+    const { userId } = userCart;
+    const userCartItems = await this.cartItemModel.find({ userId });
     const detailedCartItems = userCartItems.map((cartItem) => cartItem.toObject());
     const detailedCart = { ...userCart, cartItems: detailedCartItems };
     return this.parseCartAndCartItems(detailedCart);
@@ -113,6 +195,9 @@ export class CartService {
 
   private parseCartAndCartItems(rawItems: any | any[]) {
     const rawItemsArray = Array.isArray(rawItems) ? rawItems : [rawItems];
+
+    if (rawItemsArray.length < 1) return [];
+
     const parsedItemData = rawItemsArray.map((item) => {
       let result = item;
       result = this.parseRawCartData(result);
@@ -137,25 +222,26 @@ export class CartService {
       productId,
       quantity,
       dateCreated,
-      dateUpdated: new Date(),
+      dateUpdated: dateCreated,
     });
 
     const { id: cartItemId } = await this.cartItemModel.findOne({ userId, dateCreated });
-    return await this.updateCart(userId, { cartItemId, productId, quantity })
+    return await this.updateAdditionToCart(userId, { cartItemId, productId, quantity })
   }
 
   private async createCartAndAddItem(userId: string, itemToAddData: AddItemToCartDto) {
+    const dateCreated = new Date()
     await this.cartModel.create({
       userId,
       cartItems: [],
       totalPrice: "00.0",
-      dateCreated: new Date(),
-      dateUpdated: new Date(),
+      dateCreated: dateCreated,
+      dateUpdated: dateCreated,
     })
     return await this.addCartItemToCart(userId, itemToAddData)
   }
 
-  private async updateCart(userId: string, newCartData: UpdateCartDataType) {
+  private async updateAdditionToCart(userId: string, newCartData: UpdateCartDataType) {
     try {
       const { productId, quantity, cartItemId } = newCartData;
       const productResponse = await this.productService.findOne(productId)
@@ -164,11 +250,15 @@ export class CartService {
       const { _id, name, price } = foundProduct;
       const validProductId = _id.toString();
       const { totalPrice, cartItems } = foundCart;
-      const allCartItems = await this.cartItemModel.find({ id: { $in: cartItems } });
-      const cartItemsProductIds = allCartItems.filter(({ id }) => id !== cartItemId).map(({ productId }) => productId.toString())
+      const allCartItems = cartItems.length < 1 ? [] : await this.cartItemModel.find({ userId });
+      const cartItemsProductIds = allCartItems.filter(({ id }) => {
+        if (id !== cartItemId) return true;
+        return false;
+      }).map(({ productId }) => productId.toString())
 
       if (cartItemsProductIds.includes(validProductId)) {
         await this.cartItemModel.findByIdAndDelete(cartItemId);
+        await this.cartModel.findOneAndDelete({ userId });
 
         throw new HttpException({
           status: HttpStatus.CONFLICT,
@@ -178,20 +268,21 @@ export class CartService {
 
       const subTotalPrice = parseFloat(price) * quantity;
       const newCartTotal = (parseFloat(totalPrice) + subTotalPrice).toFixed(2);
+      const dateUpdated = new Date()
 
       await this.cartItemModel.findByIdAndUpdate(cartItemId, {
         $set: {
           name,
           price,
           subTotalPrice: subTotalPrice.toFixed(2),
-          dateUpdated: new Date(),
+          dateUpdated,
         }
       })
       await this.cartModel.findByIdAndUpdate(foundCart.id, {
         $set: {
           cartItems: [...cartItems, cartItemId],
           totalPrice: newCartTotal,
-          dateUpdated: new Date(),
+          dateUpdated,
         }
       })
 
@@ -202,39 +293,3 @@ export class CartService {
   }
 
 }
-
-
-/** 
- * Add cartItem:
- *    cart exists:
- *      - create a cartItem
- *      - add new item and calc new total
- * 
- *    cart doesn't exist:
- *      - create a cart
- *      - create a cartItem
- *      - add new item and calc new total
- * 
- * Update cartItem:
- *    quantity is less than 1:
- *      - throw error to remove item instead
- *    
- *    quantity is equal to or more than 1:
- *      - update cartItem quantity and subtotal
- *      - update cart total
- * 
- * Remove cartItem:
- *    cartItem doesn't exists:
- *      - throw error
- * 
- *    cartItem exist:
- *      - remove it from cart and recalc total
- *      - remove from db
- * 
- * Clear cart:
- *    cartItems are less then 1:
- *      - throw error
- * 
- *    cartItems are equal or more than 1:
- *      - remove all cartItems with userId
- */
