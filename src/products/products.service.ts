@@ -74,9 +74,9 @@ export class ProductsService {
 
       if(!foundProduct){
         throw new HttpException({
-          status: HttpStatus.BAD_REQUEST,
+          status: HttpStatus.NOT_FOUND,
           error: "No product found",
-        }, HttpStatus.BAD_REQUEST);
+        }, HttpStatus.NOT_FOUND);
       }
 
       const parsedProduct = this.parseProducts(foundProduct);

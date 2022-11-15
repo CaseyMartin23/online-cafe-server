@@ -6,8 +6,8 @@ export type CartItemDocument = CartItem & Document;
 
 @Schema()
 export class CartItem extends DefaultSchema {
-    @Prop({ type: SchemaTypes.ObjectId, ref: 'Cart' })
-    cartId: string;
+    @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+    userId: string;
     
     @Prop({ type: SchemaTypes.ObjectId, ref: 'Product' })
     productId: string;
