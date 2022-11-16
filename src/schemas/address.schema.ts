@@ -2,10 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes } from 'mongoose';
 import { DefaultSchema } from './default.shema';
 
-export type DeliveryAddressDocument = DeliveryAddress & Document;
+export type AddressDocument = Address & Document;
 
 @Schema()
-export class DeliveryAddress extends DefaultSchema {
+export class Address extends DefaultSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   userId: string;
 
@@ -40,4 +40,4 @@ export class DeliveryAddress extends DefaultSchema {
   isSelected: boolean = false;
 }
 
-export const DeliveryAddressSchema = SchemaFactory.createForClass(DeliveryAddress);
+export const AddressSchema = SchemaFactory.createForClass(Address);

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
@@ -13,7 +13,7 @@ export class ProductsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new CreateProductPolicyHandler())
   @Post()
-  create(@Req() req, @Body() createProductDto: CreateProductDto) {
+  create(@Request() req, @Body() createProductDto: CreateProductDto) {
     return this.productsService.create(req.user.sub, createProductDto);
   }
 

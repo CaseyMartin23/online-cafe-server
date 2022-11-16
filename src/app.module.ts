@@ -7,9 +7,10 @@ import { AuthModule } from './auth/auth.module';
 import { CaslModule } from './auth/casl/casl.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
-import { DeliveryAddressesModule } from './delivery-addresses/deliveryAddresses.module';
-import { PaymentMethodsModule } from './payment-methods/paymentMethods.module';
 import { CartModule } from './cart/cart.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { PaymentsModule } from './payments/payments.module';
+import { DeliveriesModule } from './deliveries/deliveries.module';
 
 @Module({
   imports: [
@@ -20,9 +21,10 @@ import { CartModule } from './cart/cart.module';
     CaslModule,
     ProductsModule,
     OrdersModule,
-    DeliveryAddressesModule,
-    PaymentMethodsModule,
-    CartModule
+    CartModule,
+    AddressesModule,
+    PaymentsModule,
+    DeliveriesModule
   ],
 })
 export class AppModule { }

@@ -51,7 +51,6 @@ export class CartService {
       const foundCart = await this.cartModel.findOne({ userId });
 
       if (!foundCart) {
-        console.log("no cart found");
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
           error: "No cart found",
