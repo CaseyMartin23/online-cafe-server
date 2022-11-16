@@ -27,30 +27,31 @@ export class CartService {
       let response: ResponseHandlerType | { message: string } = { message: "Successfully added item to cart" }
       const { productId, quantity } = itemToAddData;
       const foundProduct = await this.productService.findOne(productId)
+      const foundCart = await this.getUserCart(userId);
 
       if (!foundProduct.success) {
         return foundProduct;
       }
-
       this.checkQuantity(quantity)
-      const foundCart = await this.getUserCart(userId);
+      
       if (!foundCart.success && foundCart.error.statusCode === 404) {
         response = await this.createCartAndAddItem(userId, itemToAddData);
       } else {
         response = await this.addCartItemToCart(userId, itemToAddData);
       }
-
+      
       return response;
     } catch (err) {
       return responseHandler(false, err);
     }
   }
-
+  
   async getUserCart(userId: string) {
     try {
       const foundCart = await this.cartModel.findOne({ userId });
 
       if (!foundCart) {
+        console.log("no cart found");
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
           error: "No cart found",
@@ -78,7 +79,7 @@ export class CartService {
       const [foundProduct] = productResponse.data.items;
       const allCartItems = await this.cartItemModel.find({ userId });
       const totalExcludingUpdateCartItem = allCartItems.filter(({ id }) => id !== foundCartItem.id).reduce(
-        (prev, curr) => prev + parseFloat(curr.price),
+        (prev, curr) => prev + parseFloat(curr.subTotalPrice),
         parseFloat("0.00")
       );
       const newSubTotal = parseFloat(foundProduct.price) * quantity;
@@ -116,13 +117,13 @@ export class CartService {
 
       const allCartItems = await this.cartItemModel.find({ userId });
       const cartItems = allCartItems.map(({ id }) => id)
-      const newTotal = allCartItems.reduce((prev, curr) => prev + parseFloat(curr.price), parseFloat("0.00"));
+      const newTotal = allCartItems.reduce((prev, curr) => prev + parseFloat(curr.subTotalPrice), parseFloat("0.00")).toFixed(2);
       const dateUpdated = new Date();
 
       await this.cartModel.findOneAndUpdate({ userId }, {
         $set: {
           cartItems,
-          totalPrice: newTotal.toFixed(2),
+          totalPrice: newTotal,
           dateUpdated,
         }
       })
@@ -249,16 +250,22 @@ export class CartService {
       const [foundProduct] = productResponse.data.items;
       const { _id, name, price } = foundProduct;
       const validProductId = _id.toString();
-      const { totalPrice, cartItems } = foundCart;
-      const allCartItems = cartItems.length < 1 ? [] : await this.cartItemModel.find({ userId });
-      const cartItemsProductIds = allCartItems.filter(({ id }) => {
-        if (id !== cartItemId) return true;
-        return false;
-      }).map(({ productId }) => productId.toString())
+      const { id: cartId, totalPrice, cartItems } = foundCart;
+      const allCartItems = cartItems.length === 0 ? [] : await this.cartItemModel.find({ userId });
+      const userCartItemsExcludingCurrent = allCartItems.filter(({ id }) => id !== cartItemId);
+      const cartItemsProductIds = userCartItemsExcludingCurrent.map(({ productId }) => productId.toString())
+      const subTotalPrice = parseFloat(price) * quantity;
 
       if (cartItemsProductIds.includes(validProductId)) {
+        const updatedTotal = userCartItemsExcludingCurrent.reduce((prev, curr) => prev + parseFloat(curr.subTotalPrice), parseFloat("00.0"));
+        await this.cartModel.findByIdAndUpdate(cartId, {
+          $set: {
+            cartItems: userCartItemsExcludingCurrent.map(({ id }) => id),
+            totalPrice: updatedTotal.toFixed(2),
+            dateUpdated: new Date()
+          }
+        });
         await this.cartItemModel.findByIdAndDelete(cartItemId);
-        await this.cartModel.findOneAndDelete({ userId });
 
         throw new HttpException({
           status: HttpStatus.CONFLICT,
@@ -266,7 +273,6 @@ export class CartService {
         }, HttpStatus.CONFLICT);
       }
 
-      const subTotalPrice = parseFloat(price) * quantity;
       const newCartTotal = (parseFloat(totalPrice) + subTotalPrice).toFixed(2);
       const dateUpdated = new Date()
 
