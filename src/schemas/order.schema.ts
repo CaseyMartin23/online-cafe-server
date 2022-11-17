@@ -13,16 +13,13 @@ export class Order extends DefaultSchema {
   status: string;
 
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'CartItem' }] })
-  orderItems: string[];
+  cartItems: string[];
 
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'PaymentMethod' }] })
-  paymentMethod: string;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'PaymentMethod' })
+  paymentId: string;
 
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'DeliveryMethod' }] })
-  deliveryMethod: string;
-
-  @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'DeliveryAddress' }] })
-  deliveryAddress: string;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Delivery' })
+  deliveryId: string;
 
   @Prop(Date)
   dateOrdered: Date;
@@ -32,9 +29,6 @@ export class Order extends DefaultSchema {
 
   @Prop(Date)
   dateFulfilled: Date;
-
-  @Prop(String)
-  signedBy: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

@@ -11,6 +11,7 @@ import { Address, AddressSchema } from 'src/schemas/address.schema';
     MongooseModule.forFeature([{ name: Address.name, schema: AddressSchema }]),
   ],
   controllers: [AddressesController],
-  providers: [AddressesService]
+  providers: [AddressesService],
+  exports: [AddressesService]
 })
 export class AddressesModule {}

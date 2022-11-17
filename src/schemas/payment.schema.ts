@@ -13,6 +13,9 @@ export class Payment extends DefaultSchema {
   type: string;
 
   @Prop(String)
+  status: string;
+
+  @Prop(String)
   holderName?: string;
 
   @Prop(String)

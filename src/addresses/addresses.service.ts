@@ -57,6 +57,16 @@ export class AddressesService {
     }
   }
 
+  async getSelectedUserAddress(userId: string) {
+    try {
+      const selectedUserAddress = await this.addressModel.findOne({ userId, isSelected: true });
+      const parsedAddress = this.parseAddresses(selectedUserAddress);
+      return responseHandler(true, { items: parsedAddress });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
+  }
+
   async selectUserAddress(userId: string, addressId: string) {
     try {
       const foundAddress = await this.validateAddress(addressId);
@@ -106,7 +116,14 @@ export class AddressesService {
     }
   }
 
-  private async validateAddress(addressId: string) {
+  async validateAddress(addressId: string) {
+    if(!addressId) {
+      throw new HttpException({
+        status: HttpStatus.NOT_ACCEPTABLE,
+        error: "No addressId provided.",
+      }, HttpStatus.NOT_ACCEPTABLE);
+    }
+    
     const found = await this.addressModel.findById(addressId);
     
     if(!found) {

@@ -6,7 +6,4 @@ export class CreateDeliveryDto {
   
   @IsString()
   addressId: string;
-  
-  @IsString()
-  status: string;
 }
