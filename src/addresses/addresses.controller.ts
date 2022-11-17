@@ -24,6 +24,11 @@ export class AddressesController {
     return await this.addressesService.getUserAddress(req.user.sub, id);
   }
 
+  @Patch('select/:id')
+  async selectAddress(@Request() req, @Param('id') id: string) {
+    return this.addressesService.selectUserAddress(req.user.sub, id);
+  }
+
   @Patch(':id')
   async update(@Request() req, @Param('id') id: string, @Body() updateAddressDto: UpdateAddressDto) {
     return this.addressesService.updateUserAddress(req.user.sub, id, updateAddressDto);
