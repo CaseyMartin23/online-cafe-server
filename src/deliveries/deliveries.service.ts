@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AddressesService } from 'src/addresses/addresses.service';
@@ -34,7 +34,9 @@ export class DeliveriesService {
 
   async getUserDeliveries(userId: string) {
     try {
-      return `This action returns all deliveries`;
+      const userDeliveries = await this.deliverModel.find({ userId });
+      const parsedUserDeliveries = this.parseDelivery(userDeliveries);
+      return responseHandler(true, parsedUserDeliveries);
     } catch (err) {
       return responseHandler(false, err)
     }
@@ -42,23 +44,36 @@ export class DeliveriesService {
 
   async getUserDelivery(userId: string, id: string) {
     try {
-      return `This action returns a #${id} delivery`;
+      const foundDelivery = await this.validUserDelivery(id);
+      this.validatedUserDeliveryAuth(userId, foundDelivery.userId.toString());
+      const parsedUserDelivery = this.parseDelivery(foundDelivery);
+      return responseHandler(true, parsedUserDelivery);
     } catch (err) {
       return responseHandler(false, err)
     }
   }
 
-  async updateUserDelivery(userId: string, id: string, updateDeliveryDto: UpdateDeliveryDto) {
+  async updateUserDelivery(id: string, updateDeliveryDto: UpdateDeliveryDto) {
     try {
-      return `This action updates a #${id} delivery`;
+      const foundDelivery = await this.validUserDelivery(id);
+      await this.deliverModel.findByIdAndUpdate(foundDelivery.id, {
+        $set: {
+          type: updateDeliveryDto.type ? updateDeliveryDto.type : foundDelivery.type,
+          addressId: updateDeliveryDto.addressId ? updateDeliveryDto.addressId : foundDelivery.addressId,
+          status: updateDeliveryDto.status ? updateDeliveryDto.status : foundDelivery.status,
+        }
+      })
+      return responseHandler(true, "Successfully updated delivery");
     } catch (err) {
       return responseHandler(false, err)
     }
   }
 
-  async removeUserDelivery(userId: string, id: string) {
+  async removeUserDelivery(id: string) {
     try {
-      return `This action removes a #${id} delivery`;
+      const foundDelivery = await this.validUserDelivery(id);
+      await this.deliverModel.findByIdAndDelete(foundDelivery.id);
+      return responseHandler(true, "Successfully removed delivery");
     } catch (err) {
       return responseHandler(false, err)
     }
@@ -71,5 +86,34 @@ export class DeliveriesService {
       return rest;
     });
     return parsedDeliveries;
+  }
+
+  private async validUserDelivery(deliveryId: string) {
+    if(!deliveryId) {
+      throw new HttpException({
+        status: HttpStatus.NOT_ACCEPTABLE,
+        error: "No deliveryId provided.",
+      }, HttpStatus.NOT_ACCEPTABLE)
+    }
+
+    const foundDelivery = await this.deliverModel.findById(deliveryId);
+
+    if(foundDelivery) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "No delivery found."
+      }, HttpStatus.NOT_FOUND)
+    }
+    
+    return foundDelivery;
+  }
+
+  private validatedUserDeliveryAuth(userId: string, deliveryUserId: string) {
+    if(userId !== deliveryUserId) {
+      throw new HttpException({
+        status: HttpStatus.UNAUTHORIZED,
+        error: "Unauthorized",
+      }, HttpStatus.UNAUTHORIZED)
+    }
   }
 }

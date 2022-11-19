@@ -11,7 +11,6 @@ export type AppAbility = MongoAbility<Abilities>;
 
 type RequestUser = {
   sub: string;
-  email: string;
   iat: number;
   exp: number;
 }
@@ -19,8 +18,9 @@ type RequestUser = {
 @Injectable()
 export class CaslAbilityFactory {
   constructor(private userService: UserService) { }
+
   async createForUser(user: RequestUser) {
-    const fullUser = await this.userService.findOne(user.sub)
+    const fullUser = await this.userService.findOne(user.sub);
     const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
     if (fullUser.isAdmin) {

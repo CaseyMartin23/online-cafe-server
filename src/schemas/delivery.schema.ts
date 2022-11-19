@@ -11,6 +11,7 @@ export enum DeliveryStatus {
   Pending = "pending",
   OnTheWay = "on-the-way",
   Delivered = "delivered",
+  Cancelled = "cancelled",
   Exception = "exception",
 }
 

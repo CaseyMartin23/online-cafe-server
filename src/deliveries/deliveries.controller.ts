@@ -25,12 +25,12 @@ export class DeliveriesController {
   }
 
   @Patch(':id')
-  async update(@Request() req, @Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
-    return await this.deliveriesService.updateUserDelivery(req.user.sub, id, updateDeliveryDto);
+  async update(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
+    return await this.deliveriesService.updateUserDelivery(id, updateDeliveryDto);
   }
 
   @Delete(':id')
-  async remove(@Request() req, @Param('id') id: string) {
-    return await this.deliveriesService.removeUserDelivery(req.user.sub, id);
+  async remove(@Param('id') id: string) {
+    return await this.deliveriesService.removeUserDelivery(id);
   }
 }
