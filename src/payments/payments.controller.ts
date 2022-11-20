@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/createPayment.dto';
 import { UpdatePaymentDto } from './dto/updatePayment.dto';
+import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 
+@UseGuards(AccessTokenGuard)
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
@@ -10,6 +12,11 @@ export class PaymentsController {
   @Post()
   async create(@Request() req, @Body() createPaymentDto: CreatePaymentDto) {
     return await this.paymentsService.create(req.user.sub, createPaymentDto);
+  }
+
+  @Post('intent')
+  async paymentIntent() {
+    return await this.paymentsService.createPaymentIntent();
   }
 
   @Get()
