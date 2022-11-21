@@ -11,7 +11,7 @@ export enum UserTypes {
 
 @Schema()
 export class User extends DefaultSchema {
-  @Prop(String)
+  @Prop({ type: String, enum: UserTypes })
   type: UserTypes;
 
   @Prop(String)

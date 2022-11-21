@@ -17,8 +17,8 @@ export enum DeliveryStatus {
 
 @Schema()
 export class Delivery extends DefaultSchema {
-  @Prop(String)
-  type: string = DeliveryType.DoorDash;
+  @Prop({ type: String, enum: DeliveryType })
+  type: DeliveryType;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   userId: string;
@@ -26,8 +26,8 @@ export class Delivery extends DefaultSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Address' })
   addressId: string;
 
-  @Prop(String)
-  status: string = DeliveryStatus.Pending;
+  @Prop({ type: String, enum: DeliveryStatus })
+  status: DeliveryStatus = DeliveryStatus.Pending;
 }
 
 export const DeliverySchema = SchemaFactory.createForClass(Delivery);

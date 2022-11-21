@@ -3,17 +3,26 @@ import { Document, SchemaTypes } from 'mongoose';
 import { DefaultSchema } from './default.shema';
 
 export type PaymentDocument = Payment & Document;
+export enum PaymentType {
+  Card = "card",
+  Paypal = "paypal",
+}
+export enum PaymentStatus {
+  Incomplete = "incomplete",
+  Complete = "complete",
+  Exception = "exception",
+}
 
 @Schema()
 export class Payment extends DefaultSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
   userId: string;
 
-  @Prop(String)
-  type: string;
+  @Prop({ type: String, enum: PaymentType })
+  type: PaymentType;
 
-  @Prop(String)
-  status: string;
+  @Prop({ type: String, enum: PaymentStatus })
+  status: PaymentStatus;
 
   @Prop(String)
   holderName?: string;
