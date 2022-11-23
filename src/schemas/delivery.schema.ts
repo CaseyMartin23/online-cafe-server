@@ -3,13 +3,18 @@ import { Document, SchemaTypes } from 'mongoose';
 import { DefaultSchema } from './default.shema';
 
 export type DeliveryDocument = Delivery & Document;
-export enum DeliveryType { 
+export enum DeliveryType {
   InHouse = "in-house",
   DoorDash = "door-dash",
 }
 export enum DeliveryStatus {
-  Pending = "pending",
-  OnTheWay = "on-the-way",
+  Created = "created",
+  Confirmed = "confirmed",
+  EnrouteToPickup = "enroute_to_pickup",
+  ArrivedAtPickup = "arrived_at_pickup",
+  PickedUp = "picked_up",
+  EnrouteToDropoff = "enroute_to_dropoff",
+  ArrivedAtDropoff = "arrived_at_dropoff",
   Delivered = "delivered",
   Cancelled = "cancelled",
   Exception = "exception",
@@ -27,7 +32,7 @@ export class Delivery extends DefaultSchema {
   addressId: string;
 
   @Prop({ type: String, enum: DeliveryStatus })
-  status: DeliveryStatus = DeliveryStatus.Pending;
+  status: DeliveryStatus = DeliveryStatus.Created;
 }
 
 export const DeliverySchema = SchemaFactory.createForClass(Delivery);

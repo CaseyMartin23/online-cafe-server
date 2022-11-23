@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Request, Param, Delete, UseGuards }
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { DeliveriesService } from './deliveries.service';
 import { CreateDeliveryDto } from './dto/createDelivery.dto';
+import { GetDeliveryQuote } from './dto/getDeliveryQuote.dto';
 import { UpdateDeliveryDto } from './dto/updateDelivery.dto';
 
 @UseGuards(AccessTokenGuard)
@@ -10,8 +11,13 @@ export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}
 
   @Post()
-  async create(@Request() req, @Body() createDeliveryDto: CreateDeliveryDto) {
-    return await this.deliveriesService.addUserDelivery(req.user.sub, createDeliveryDto);
+  async create(@Request() req) {
+    return await this.deliveriesService.addUserDelivery(req.user.sub);
+  }
+
+  @Post('quote')
+  async getQuote(@Request() req) {
+    return await this.deliveriesService.getDoordashDeliveryQuote(req.user.sub);
   }
 
   @Get()

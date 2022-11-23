@@ -28,9 +28,6 @@ export class Address extends DefaultSchema {
   state: string;
 
   @Prop(String)
-  country: string;
-
-  @Prop(String)
   zip: string;
 
   @Prop(String)

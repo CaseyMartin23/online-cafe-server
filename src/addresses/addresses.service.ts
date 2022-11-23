@@ -136,6 +136,11 @@ export class AddressesService {
     return found;
   }
 
+  public getUserAddressString(userAddress: Partial<AddressDocument>) {
+    const { streetAddress, aptAddress, city, state, zip } = userAddress.toObject();
+    return `${streetAddress}, ${aptAddress}, ${city}, ${state} ${zip}`;
+  }
+
   private validateUserAddressAuth(userId: string, addressUserId: string) {
     if(userId !== addressUserId) {
       throw new HttpException({
