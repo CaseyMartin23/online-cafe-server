@@ -137,8 +137,8 @@ export class AddressesService {
   }
 
   public getUserAddressString(userAddress: Partial<AddressDocument>) {
-    const { streetAddress, aptAddress, city, state, zip } = userAddress.toObject();
-    return `${streetAddress}, ${aptAddress}, ${city}, ${state} ${zip}`;
+    const { streetAddress, aptAddress, city, state, zip, country } = userAddress.toObject();
+    return `${streetAddress}, ${aptAddress ? `${aptAddress},` : ""} ${city}, ${state} ${zip}${country ? `, ${country}` : ""}`;
   }
 
   private validateUserAddressAuth(userId: string, addressUserId: string) {

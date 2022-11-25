@@ -71,7 +71,7 @@ export class DeliveriesService {
   public async getDoordashDeliveryQuote(userId: string) {
     try {
       const userAddress = await this.getUserSelectedAddress(userId);
-      const doordashQuote = await this.doordashClient.getDeliveryQuote({
+      const deliveryQuote = {
         pickupAddress: "7305, 207 Petronia St #101, Key West, FL 33040",
         pickupBusinessName: "Santiago's Bodega | Key West",
         pickupPhoneNumber: "+13052967691",
@@ -81,7 +81,8 @@ export class DeliveriesService {
         dropoffInstructions: "Test instructions",
         dropoffContactGivenName: userAddress.firstName,
         dropoffContactFamilyName: userAddress.lastName,
-      });
+      }
+      const doordashQuote = await this.doordashClient.getDeliveryQuote(deliveryQuote);
       // console.log({ doordashQuote });
     } catch (err) {
       responseHandler(false, err);
