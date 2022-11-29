@@ -1,6 +1,8 @@
-import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { sign, JwtPayload, JwtHeader } from "jsonwebtoken";
+import { sign, JwtPayload } from "jsonwebtoken";
+import { HttpService, } from "@nestjs/axios";
+import { firstValueFrom, catchError } from "rxjs";
+import { responseHandler } from "src/utils/responseHandling.util";
 
 interface DoordashQuoteData {
   pickupAddress: string;
@@ -17,6 +19,7 @@ interface DoordashQuoteData {
 export class DoordashClient {
   private doordashToken: string;
   private refreshTokenCounter: number = 0;
+  private httpService = new HttpService()
 
   constructor() {
     this.doordashToken = this.generateDoordasAuthJWT();
@@ -28,7 +31,6 @@ export class DoordashClient {
       aud: 'doordash',
       iss: process.env.DOORDASH_DEVELOPER_ID,
       kid: process.env.DOORDASH_KEY_ID,
-      // iat: Date.now(),
     } as JwtPayload;
     const secret = Buffer.from(process.env.DOORDASH_SIGNING_SECRET, 'base64');
     const options = {
@@ -47,9 +49,13 @@ export class DoordashClient {
   }
 
   public async getDeliveryQuote(deliveryQuoteData: DoordashQuoteData) {
-    console.log("entered getDeliveryQuote")
     try {
       const url = `${process.env.DOORDASH_API_URL}quotes`;
+      const options = {
+        headers: {
+          Authorization: `Bearer ${this.doordashToken}`,
+        },
+      };
       const body = {
         external_delivery_id: uuid(),
         pickup_address: deliveryQuoteData.pickupAddress,
@@ -63,25 +69,13 @@ export class DoordashClient {
         dropoff_contact_family_name: deliveryQuoteData.dropoffContactFamilyName,
         currency: "usd",
       };
-      const response = await axios({
-        url,
-        method: "post",
-        responseType: 'json',
-        responseEncoding: "utf-8",
-        headers: {
-          Authorization: `Bearer ${this.doordashToken}`,
-          'Accept': 'application/json',
-          'content-type': 'application/json',
-        },
-        data: body,
-      })
-      const data = response.data;
-
-      console.log({ data, parsedData: JSON.parse(data) });
+      
+      const response = this.httpService.post(url, body, options);
+      const { data } = await firstValueFrom(response)
+      return responseHandler(true, { items: [data]});
     } catch (err) {
-      console.error(err.response.data);
       await this.handleExpiredJWT(err, deliveryQuoteData);
-      return err;
+      return responseHandler(false, err);
     }
 
   }
@@ -90,13 +84,8 @@ export class DoordashClient {
     const errorData = error.response.data;
     const isExpiredJWTError = errorData.code === "authentication_error" && errorData.message === "The [exp] is in the past; the JWT is expired";
     const hasRefreshedEnough = this.refreshTokenCounter > 4;
-    
+
     if (isExpiredJWTError && !hasRefreshedEnough) {
-      console.log({
-        refreshedTokenCount: this.refreshTokenCounter,
-        exp: Math.floor(Date.now() / 1000 + 60),
-        iat: Math.floor(Date.now() / 1000)
-      });
       this.refreshDoordashToken();
       return await this.getDeliveryQuote(deliveryQuoteData);
     }

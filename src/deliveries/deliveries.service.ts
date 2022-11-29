@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AddressesService } from 'src/addresses/addresses.service';
@@ -17,16 +16,7 @@ export class DeliveriesService {
   constructor(
     @InjectModel(Delivery.name) private deliverModel: Model<DeliveryDocument>,
     private addressService: AddressesService,
-    private configService: ConfigService,
-  ) {
-    const developer_id = this.configService.get('DOORDASH_DEVELOPER_ID');
-    const key_id = this.configService.get('DOORDASH_KEY_ID');
-    const signing_secret = this.configService.get('DOORDASH_SIGNING_SECRET');
-
-    if (developer_id && key_id && signing_secret) {
-      // this.doordashClient = new DoorDashClient({ developer_id, key_id, signing_secret });
-    }
-  }
+  ) {}
 
   async addUserDelivery(userId: string) {
     try {
@@ -83,7 +73,7 @@ export class DeliveriesService {
         dropoffContactFamilyName: userAddress.lastName,
       }
       const doordashQuote = await this.doordashClient.getDeliveryQuote(deliveryQuote);
-      // console.log({ doordashQuote });
+      return doordashQuote;
     } catch (err) {
       responseHandler(false, err);
     }
