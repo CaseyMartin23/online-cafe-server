@@ -18,7 +18,7 @@ export class DeliveriesService {
     private addressService: AddressesService,
   ) {}
 
-  async addUserDelivery(userId: string) {
+  public async addUserDelivery(userId: string) {
     try {
       // const userAddressResponse = await this.addressService.getSelectedUserAddress(userId);
       // const selectedAddressId = userAddressResponse.data.items[0].id;
@@ -37,7 +37,7 @@ export class DeliveriesService {
     }
   }
 
-  async getUserDeliveries(userId: string) {
+  public async getUserDeliveries(userId: string) {
     try {
       const userDeliveries = await this.deliverModel.find({ userId });
       const parsedUserDeliveries = this.parseDelivery(userDeliveries);
@@ -47,7 +47,7 @@ export class DeliveriesService {
     }
   }
 
-  async getUserDelivery(userId: string, id: string) {
+  public async getUserDelivery(userId: string, id: string) {
     try {
       const foundDelivery = await this.validUserDelivery(id);
       this.validatedUserDeliveryAuth(userId, foundDelivery.userId.toString());
@@ -79,7 +79,7 @@ export class DeliveriesService {
     }
   }
 
-  async updateUserDelivery(id: string, updateDeliveryDto: UpdateDeliveryDto) {
+  public async updateUserDelivery(id: string, updateDeliveryDto: UpdateDeliveryDto) {
     try {
       const foundDelivery = await this.validUserDelivery(id);
       await this.deliverModel.findByIdAndUpdate(foundDelivery.id, {
@@ -95,7 +95,7 @@ export class DeliveriesService {
     }
   }
 
-  async removeUserDelivery(id: string) {
+  public async removeUserDelivery(id: string) {
     try {
       const foundDelivery = await this.validUserDelivery(id);
       await this.deliverModel.findByIdAndDelete(foundDelivery.id);

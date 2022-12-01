@@ -11,32 +11,32 @@ export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}
 
   @Post()
-  async create(@Request() req) {
+  public async create(@Request() req) {
     return await this.deliveriesService.addUserDelivery(req.user.sub);
   }
 
   @Post('quote')
-  async getQuote(@Request() req) {
+  public async getQuote(@Request() req) {
     return await this.deliveriesService.getDoordashDeliveryQuote(req.user.sub);
   }
 
   @Get()
-  async findAll(@Request() req) {
+  public async findAll(@Request() req) {
     return await this.deliveriesService.getUserDeliveries(req.user.sub);
   }
 
   @Get(':id')
-  async findOne(@Request() req, @Param('id') id: string) {
+  public async findOne(@Request() req, @Param('id') id: string) {
     return await this.deliveriesService.getUserDelivery(req.user.sub, id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
+  public async update(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
     return await this.deliveriesService.updateUserDelivery(id, updateDeliveryDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  public async remove(@Param('id') id: string) {
     return await this.deliveriesService.removeUserDelivery(id);
   }
 }

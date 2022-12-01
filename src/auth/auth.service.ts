@@ -17,7 +17,7 @@ export class AuthService {
     private jwtService: JwtService
   ) { }
 
-  async validateUser(email: string, password: string) {
+  public async validateUser(email: string, password: string) {
     try {
       const user = await this.userService.findByEmail(email);
       if (user) {
@@ -35,7 +35,7 @@ export class AuthService {
     }
   }
 
-  async logout(userId: string) {
+  public async logout(userId: string) {
     try {
       await this.userService.update(userId, { refreshToken: null })
       return responseHandler(true, { message: "Successfully logged out" })
@@ -44,7 +44,7 @@ export class AuthService {
     }
   }
 
-  async login(user: LoginUserDto) {
+  public async login(user: LoginUserDto) {
     try {
       const { id, email, refreshToken } = await this.userService.findByEmail(user.email);
       if (refreshToken) {
@@ -62,7 +62,7 @@ export class AuthService {
     }
   }
 
-  async loginAnonymousUser(id: string) {
+  public async loginAnonymousUser(id: string) {
     try {
       const tokens = await this.getTokens(id);
       await this.updateRefreshToken(id, tokens.refreshToken)
@@ -72,7 +72,7 @@ export class AuthService {
     }
   }
 
-  async registerAnonymousUser() {
+  public async registerAnonymousUser() {
     try {
       const { id } = await this.userService.create({
         type: UserTypes.anonymous,
@@ -86,7 +86,7 @@ export class AuthService {
     }
   }
 
-  async registerIdentifiedUser(userId: string, userData: RegisterUserDto) {
+  public async registerIdentifiedUser(userId: string, userData: RegisterUserDto) {
     try {
       const { password, ...rest } = userData;
       const existingUser = await this.userService.findByEmail(rest.email);
@@ -112,7 +112,7 @@ export class AuthService {
     }
   }
 
-  async userProfile(userId: string) {
+  public async userProfile(userId: string) {
     try {
       const { id, firstName, lastName, email } = await this.userService.findOne(userId);
       const data = {
@@ -129,7 +129,7 @@ export class AuthService {
     }
   }
 
-  async isAdmin(userId: string) {
+  public async isAdmin(userId: string) {
     try {
       const { isAdmin } = await this.userService.findOne(userId);
       return responseHandler(true, { isAdmin });
@@ -138,7 +138,7 @@ export class AuthService {
     }
   }
 
-  async refreshUserTokens(userId: string, refreshToken: string) {
+  public async refreshUserTokens(userId: string, refreshToken: string) {
     try {
       const user = await this.userService.findOne(userId);
       if (!user || !user.refreshToken) throw new ForbiddenException("Access Denied");

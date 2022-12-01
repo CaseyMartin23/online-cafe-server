@@ -18,24 +18,24 @@ export class ProductsController {
   }
 
   @Get('page')
-  async findAll(@Query("index") pageIndex: string) {
+  public async findAll(@Query("index") pageIndex: string) {
     return await this.productsService.findByPage(pageIndex);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  public async findOne(@Param('id') id: string) {
     return await this.productsService.findOne(id);
   }
 
   @UseGuards(PoliciesGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  public async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return await this.productsService.update(id, updateProductDto);
   }
 
   @UseGuards(PoliciesGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  public async remove(@Param('id') id: string) {
     return await this.productsService.remove(id);
   }
 }

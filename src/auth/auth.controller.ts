@@ -12,43 +12,43 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Get("logout")
-  async logout(@Request() req) {
+  public async logout(@Request() req) {
     return await this.authService.logout(req.user.sub);
   }
 
   @UseGuards(LocalAuthGuard)
   @Post("login")
-  async login(@Body() user: LoginUserDto) {
+  public async login(@Body() user: LoginUserDto) {
     return await this.authService.login(user);
   }
 
   @UseGuards(AccessTokenGuard)
   @Post("register")
-  async register(@Request() req, @Body() registerUserDto: RegisterUserDto) {
+  public async register(@Request() req, @Body() registerUserDto: RegisterUserDto) {
     return await this.authService.registerIdentifiedUser(req.user.sub, registerUserDto);
   }
 
   @Get("initial")
-  async initialRegister() {
+  public async initialRegister() {
     return await this.authService.registerAnonymousUser();
   }
 
   @UseGuards(RefreshTokenGuard)
   @Get("refresh")
-  async refreshUserTokens(@Request() req) {
+  public async refreshUserTokens(@Request() req) {
     const user = req.user;
     return await this.authService.refreshUserTokens(user.sub, user.refreshToken);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get("isAdmin")
-  async isAdminUser(@Request() req) {
+  public async isAdminUser(@Request() req) {
     return await this.authService.isAdmin(req.user.sub);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get("profile")
-  async getProfile(@Request() req) {
+  public async getProfile(@Request() req) {
     return await this.authService.userProfile(req.user.sub);
   }
 }

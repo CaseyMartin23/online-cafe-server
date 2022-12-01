@@ -10,7 +10,7 @@ import { UpdateAddressDto } from './dto/updateAddress.dto';
 export class AddressesService {
   constructor(@InjectModel(Address.name) private addressModel: Model<AddressDocument>) { }
 
-  async addUserAddress(userId: string, createAddressDto: CreateAddressDto) {
+  public async addUserAddress(userId: string, createAddressDto: CreateAddressDto) {
     try {
       const { firstName, lastName, streetAddress, aptAddress, city, state, country, zip, phoneNumber } = createAddressDto;
       const currentDate = new Date();
@@ -36,7 +36,7 @@ export class AddressesService {
     }
   }
 
-  async getUserAddresses(userId: string) {
+  public async getUserAddresses(userId: string) {
     try {
       const foundAddresses = await this.addressModel.find({ userId });
       const parsedAddresses = this.parseAddresses(foundAddresses);
@@ -46,7 +46,7 @@ export class AddressesService {
     }
   }
 
-  async getUserAddress(userId: string, addressId: string) {
+  public async getUserAddress(userId: string, addressId: string) {
     try {
       const foundAddress = await this.validateAddress(addressId);
       this.validateUserAddressAuth(userId, foundAddress.userId.toString());
@@ -57,7 +57,7 @@ export class AddressesService {
     }
   }
 
-  async getSelectedUserAddress(userId: string) {
+  public async getSelectedUserAddress(userId: string) {
     try {
       const selectedUserAddress = await this.addressModel.findOne({ userId, isSelected: true });
       const parsedAddress = this.parseAddresses(selectedUserAddress);
@@ -67,7 +67,7 @@ export class AddressesService {
     }
   }
 
-  async selectUserAddress(userId: string, addressId: string) {
+  public async selectUserAddress(userId: string, addressId: string) {
     try {
       const foundAddress = await this.validateAddress(addressId);
       this.validateUserAddressAuth(userId, foundAddress.userId.toString());
@@ -89,7 +89,7 @@ export class AddressesService {
     }
   }
 
-  async updateUserAddress(userId: string, addressId: string, updateAddressDto: UpdateAddressDto) {
+  public async updateUserAddress(userId: string, addressId: string, updateAddressDto: UpdateAddressDto) {
     try {
       const foundAddress = await this.validateAddress(addressId);
       this.validateUserAddressAuth(userId, foundAddress.userId.toString())
@@ -105,7 +105,7 @@ export class AddressesService {
     }
   }
 
-  async removeUserAddress(userId: string, addressId: string) {
+  public async removeUserAddress(userId: string, addressId: string) {
     try {
       const foundAddress = await this.validateAddress(addressId);
       this.validateUserAddressAuth(userId, foundAddress.userId.toString())
@@ -116,7 +116,7 @@ export class AddressesService {
     }
   }
 
-  async validateAddress(addressId: string) {
+  public async validateAddress(addressId: string) {
     if(!addressId) {
       throw new HttpException({
         status: HttpStatus.NOT_ACCEPTABLE,

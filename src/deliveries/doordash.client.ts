@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { sign, JwtPayload } from "jsonwebtoken";
 import { HttpService, } from "@nestjs/axios";
-import { firstValueFrom, catchError } from "rxjs";
+import { firstValueFrom } from "rxjs";
 import { responseHandler } from "src/utils/responseHandling.util";
 
 interface DoordashQuoteData {
@@ -22,30 +22,7 @@ export class DoordashClient {
   private httpService = new HttpService()
 
   constructor() {
-    this.doordashToken = this.generateDoordasAuthJWT();
-  }
-
-  private generateDoordasAuthJWT() {
-    console.log("entered generateDoordasAuthJWT")
-    const data = {
-      aud: 'doordash',
-      iss: process.env.DOORDASH_DEVELOPER_ID,
-      kid: process.env.DOORDASH_KEY_ID,
-    } as JwtPayload;
-    const secret = Buffer.from(process.env.DOORDASH_SIGNING_SECRET, 'base64');
-    const options = {
-      algorithm: 'HS256',
-      header: { 'dd-ver': 'DD-JWT-V1' },
-      expiresIn: 1800,
-    } as unknown;
-    const token = sign(data, secret, options);
-    console.log({ token, data });
-    return token;
-  }
-
-  private refreshDoordashToken() {
-    this.refreshTokenCounter = this.refreshTokenCounter + 1;
-    this.doordashToken = this.generateDoordasAuthJWT();
+    this.doordashToken = this.generateAuthJWT();
   }
 
   public async getDeliveryQuote(deliveryQuoteData: DoordashQuoteData) {
@@ -78,6 +55,33 @@ export class DoordashClient {
       return responseHandler(false, err);
     }
 
+  }
+
+  public async createDelivery() {
+    // create an actually delivery
+    // save important data from response
+  }
+
+  private generateAuthJWT() {
+    const data = {
+      aud: 'doordash',
+      iss: process.env.DOORDASH_DEVELOPER_ID,
+      kid: process.env.DOORDASH_KEY_ID,
+    } as JwtPayload;
+    const secret = Buffer.from(process.env.DOORDASH_SIGNING_SECRET, 'base64');
+    const options = {
+      algorithm: 'HS256',
+      header: { 'dd-ver': 'DD-JWT-V1' },
+      expiresIn: 1800,
+    } as unknown;
+    const token = sign(data, secret, options);
+    console.log({ token, data });
+    return token;
+  }
+
+  private refreshDoordashToken() {
+    this.refreshTokenCounter = this.refreshTokenCounter + 1;
+    this.doordashToken = this.generateAuthJWT();
   }
 
   private async handleExpiredJWT(error: any, deliveryQuoteData: DoordashQuoteData) {

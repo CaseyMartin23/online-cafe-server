@@ -22,7 +22,7 @@ export class CartService {
     private productService: ProductsService,
   ) { }
 
-  async addCartItem(userId: string, itemToAddData: AddItemToCartDto) {
+  public async addCartItem(userId: string, itemToAddData: AddItemToCartDto) {
     try {
       let response: ResponseHandlerType | { message: string } = { message: "Successfully added item to cart" }
       const { productId, quantity } = itemToAddData;
@@ -46,7 +46,7 @@ export class CartService {
     }
   }
   
-  async getUserCart(userId: string) {
+  public async getUserCart(userId: string) {
     try {
       const foundCart = await this.cartModel.findOne({ userId });
 
@@ -64,7 +64,7 @@ export class CartService {
     }
   }
 
-  async updateCartItem(userId: string, newCartItemData: UpdateCartItemDto) {
+  public async updateCartItem(userId: string, newCartItemData: UpdateCartItemDto) {
     try {
       const { cartItemId, quantity } = newCartItemData;
       const foundCartItem = await this.cartItemModel.findById(cartItemId);
@@ -105,7 +105,7 @@ export class CartService {
     }
   }
 
-  async removeCartItem(userId: string, cartItemId: string) {
+  public async removeCartItem(userId: string, cartItemId: string) {
     try {
       const foundCartItem = await this.cartItemModel.findById(cartItemId);
 
@@ -133,7 +133,7 @@ export class CartService {
     }
   }
 
-  async clearCart(userId: string) {
+  public async clearCart(userId: string) {
     try {
       await this.cartItemModel.deleteMany({ userId });
       await this.cartModel.findOneAndUpdate({ userId }, {
@@ -175,7 +175,7 @@ export class CartService {
       }, HttpStatus.UNAUTHORIZED)
     }
   }
-
+  
   private async getCartDetails(userCart: Partial<Cart>) {
     const { userId } = userCart;
     const userCartItems = await this.cartItemModel.find({ userId });
@@ -183,7 +183,7 @@ export class CartService {
     const detailedCart = { ...userCart, cartItems: detailedCartItems };
     return this.parseCartAndCartItems(detailedCart);
   }
-
+  
   private parseRawCartData(rawItem: any) {
     let parsedResult = rawItem;
     if (parsedResult.userId) {

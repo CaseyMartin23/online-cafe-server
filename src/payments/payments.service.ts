@@ -20,7 +20,7 @@ export class PaymentsService {
     this.stripe = new Stripe(this.configService.get("STRIPE_API_SECRET_KEY"), { apiVersion: "2022-11-15" });
   }
 
-  async createStripeIntent(userId: string) {
+  public async createStripeIntent(userId: string) {
     try {
       // get user cart and calc total price
       const userCartResponse = await this.cartService.getUserCart(userId);
@@ -57,9 +57,7 @@ export class PaymentsService {
     }
   }
 
-  
-
-  async findAll(userId: string) {
+  public async findAll(userId: string) {
     try {
       
     } catch (err) {
@@ -68,7 +66,7 @@ export class PaymentsService {
     return `This action returns all payments`;
   }
 
-  async findOne(userId: string, id: string) {
+  public async findOne(userId: string, id: string) {
     try {
       
     } catch (err) {
@@ -77,7 +75,7 @@ export class PaymentsService {
     return `This action returns a #${id} payment`;
   }
 
-  async update(userId: string, id: string, updatePaymentDto: UpdatePaymentDto) {
+  public async update(userId: string, id: string, updatePaymentDto: UpdatePaymentDto) {
     try {
       
     } catch (err) {
@@ -86,7 +84,7 @@ export class PaymentsService {
     return `This action updates a #${id} payment`;
   }
 
-  async remove(userId: string, id: string) {
+  public async remove(userId: string, id: string) {
     try {
       
     } catch (err) {

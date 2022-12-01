@@ -9,7 +9,7 @@ import { UpdateUserDto } from './dto/updateUser.dto';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
 
-  async create(createUserDto: CreateUserDto) {
+  public async create(createUserDto: CreateUserDto) {
     const createdUser = new this.userModel({
       ...createUserDto,
       isAdmin: false,
@@ -19,20 +19,20 @@ export class UserService {
     return await createdUser.save();
   }
 
-  async findAll() {
+  public async findAll() {
     return await this.userModel.find();
   }
 
-  async findOne(id: string) {
+  public async findOne(id: string) {
     return await this.userModel.findById(id);
   }
 
-  async findByEmail(email: string) {
+  public async findByEmail(email: string) {
     if(!email) return null;
     return await this.userModel.findOne({ email });
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  public async update(id: string, updateUserDto: UpdateUserDto) {
     return await this.userModel.findByIdAndUpdate(id, {
       $set: {
         ...updateUserDto,

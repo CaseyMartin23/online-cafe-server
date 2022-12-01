@@ -19,7 +19,7 @@ type RequestUser = {
 export class CaslAbilityFactory {
   constructor(private userService: UserService) { }
 
-  async createForUser(user: RequestUser) {
+  public async createForUser(user: RequestUser) {
     const fullUser = await this.userService.findOne(user.sub);
     const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
