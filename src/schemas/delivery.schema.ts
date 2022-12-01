@@ -25,8 +25,8 @@ export class Delivery extends DefaultSchema {
   @Prop({ type: String, enum: DeliveryType })
   type: DeliveryType;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
-  userId: string;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Order' })
+  orderId: string;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Address' })
   addressId: string;

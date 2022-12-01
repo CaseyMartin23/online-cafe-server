@@ -17,7 +17,7 @@ export class DeliveriesController {
 
   @Post('quote')
   public async getQuote(@Request() req) {
-    return await this.deliveriesService.getDoordashDeliveryQuote(req.user.sub);
+    return await this.deliveriesService.getQuote(req.user.sub);
   }
 
   @Get()

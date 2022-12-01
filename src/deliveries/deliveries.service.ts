@@ -8,6 +8,7 @@ import { responseHandler } from 'src/utils/responseHandling.util';
 import { CreateDeliveryDto } from './dto/createDelivery.dto';
 import { UpdateDeliveryDto } from './dto/updateDelivery.dto';
 import { GetDeliveryQuote } from './dto/getDeliveryQuote.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DeliveriesService {
@@ -16,6 +17,7 @@ export class DeliveriesService {
   constructor(
     @InjectModel(Delivery.name) private deliverModel: Model<DeliveryDocument>,
     private addressService: AddressesService,
+    private configService: ConfigService,
   ) {}
 
   public async addUserDelivery(userId: string) {
@@ -50,22 +52,36 @@ export class DeliveriesService {
   public async getUserDelivery(userId: string, id: string) {
     try {
       const foundDelivery = await this.validUserDelivery(id);
-      this.validatedUserDeliveryAuth(userId, foundDelivery.userId.toString());
+      const foundUserAddress = await this.addressService.validateAddress(foundDelivery.addressId);
+      this.validatedUserDeliveryAuth(userId, foundUserAddress.userId.toString());
       const parsedUserDelivery = this.parseDelivery(foundDelivery);
-      return responseHandler(true, parsedUserDelivery);
+      return responseHandler(true, { items: parsedUserDelivery });
     } catch (err) {
       return responseHandler(false, err)
     }
   }
 
-  public async getDoordashDeliveryQuote(userId: string) {
+  public async getQuote(userId: string) {
+    const deliveryType = this.configService.get("DELIVERY_TYPE");
+
+    if(deliveryType === DeliveryType.DoorDash){
+      return this.getDoordashDeliveryQuote(userId);
+    }
+    return this.getInHouseDeliveryQuote(userId)
+  }
+
+  private async getInHouseDeliveryQuote(userId: string) {
+    // calculate in-house delivery cost
+  }
+
+  private async getDoordashDeliveryQuote(userId: string) {
     try {
       const userAddress = await this.getUserSelectedAddress(userId);
       const deliveryQuote = {
-        pickupAddress: "7305, 207 Petronia St #101, Key West, FL 33040",
-        pickupBusinessName: "Santiago's Bodega | Key West",
-        pickupPhoneNumber: "+13052967691",
-        pickupInstructions: "Test pickup",
+        pickupAddress: this.configService.get("DOORDASH_PICKUP_ADDRESS"),
+        pickupBusinessName: this.configService.get("DOORDASH_PICKUP_BUSINESS_NAME"),
+        pickupPhoneNumber: this.configService.get("DOORDASH_PICKUP_PHONENUMBER"),
+        pickupInstructions: this.configService.get("DOORDASH_PICKUP_INSTRUCTIONS"),
         dropoffAddress: this.addressService.getUserAddressString(userAddress),
         dropoffPhoneNumber: userAddress.phoneNumber,
         dropoffInstructions: "Test instructions",
@@ -118,13 +134,13 @@ export class DeliveriesService {
     if (!deliveryId) {
       throw new HttpException({
         status: HttpStatus.NOT_ACCEPTABLE,
-        error: "No deliveryId provided.",
+        error: "No delivery ID provided.",
       }, HttpStatus.NOT_ACCEPTABLE)
     }
 
     const foundDelivery = await this.deliverModel.findById(deliveryId);
 
-    if (foundDelivery) {
+    if (!foundDelivery) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,
         error: "No delivery found."
