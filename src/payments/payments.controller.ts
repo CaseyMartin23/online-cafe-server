@@ -9,27 +9,27 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('intent')
-  public async paymentIntent(@Request() req) {
+  public async paymentIntent(@Request() req: any) {
     return await this.paymentsService.createStripeIntent(req.user.sub);
   }
 
   @Get()
-  public async findAll(@Request() req) {
+  public async findAll(@Request() req: any) {
     return await this.paymentsService.findAll(req.user.sub);
   }
 
   @Get(':id')
-  public async findOne(@Request() req, @Param('id') id: string) {
+  public async findOne(@Request() req: any, @Param('id') id: string) {
     return await this.paymentsService.findOne(req.user.sub, id);
   }
 
   @Patch(':id')
-  public async update(@Request() req, @Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
+  public async update(@Request() req: any, @Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return await this.paymentsService.update(req.user.sub, id, updatePaymentDto);
   }
 
   @Delete(':id')
-  public async remove(@Request() req, @Param('id') id: string) {
+  public async remove(@Request() req: any, @Param('id') id: string) {
     return await this.paymentsService.remove(req.user.sub, id);
   }
 }

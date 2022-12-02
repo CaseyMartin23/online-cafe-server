@@ -13,7 +13,7 @@ export class ProductsController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new CreateProductPolicyHandler())
   @Post()
-  create(@Request() req, @Body() createProductDto: CreateProductDto) {
+  create(@Request() req: any, @Body() createProductDto: CreateProductDto) {
     return this.productsService.create(req.user.sub, createProductDto);
   }
 

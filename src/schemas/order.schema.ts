@@ -16,8 +16,8 @@ export class Order extends DefaultSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: "User" })
   userId: string;
 
-  @Prop(String)
-  status: string;
+  @Prop({ type: String, enum: OrderStatuses })
+  status: OrderStatuses = OrderStatuses.Partial;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: "Cart" })
   cartId: string;

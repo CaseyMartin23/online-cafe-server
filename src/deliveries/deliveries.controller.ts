@@ -11,22 +11,22 @@ export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}
 
   @Post()
-  public async create(@Request() req) {
+  public async create(@Request() req: any) {
     return await this.deliveriesService.addUserDelivery(req.user.sub);
   }
 
   @Post('quote')
-  public async getQuote(@Request() req) {
+  public async getQuote(@Request() req: any) {
     return await this.deliveriesService.getQuote(req.user.sub);
   }
 
   @Get()
-  public async findAll(@Request() req) {
+  public async findAll(@Request() req: any) {
     return await this.deliveriesService.getUserDeliveries(req.user.sub);
   }
 
   @Get(':id')
-  public async findOne(@Request() req, @Param('id') id: string) {
+  public async findOne(@Request() req: any, @Param('id') id: string) {
     return await this.deliveriesService.getUserDelivery(req.user.sub, id);
   }
 

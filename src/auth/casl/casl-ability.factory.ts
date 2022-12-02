@@ -4,8 +4,13 @@ import { Action } from "src/auth/casl.action";
 import { User } from "src/schemas/user.schema";
 import { Product } from "src/schemas/product.schema";
 import { UserService } from "src/user/user.service";
+import { Order } from "src/schemas/order.schema";
+import { Cart } from "src/schemas/cart.schema";
+import { Payment } from "src/schemas/payment.schema";
+import { Delivery } from "src/schemas/delivery.schema";
+import { Address } from "src/schemas/address.schema";
 
-type Subjects = InferSubjects<typeof Product | typeof User> | 'all';
+type Subjects = InferSubjects<typeof Product | typeof User | typeof Order | typeof Cart | typeof Payment | typeof Delivery | typeof Address> | 'all';
 type Abilities = [Action, Subjects];
 export type AppAbility = MongoAbility<Abilities>;
 
@@ -26,7 +31,11 @@ export class CaslAbilityFactory {
     if (fullUser.isAdmin) {
       can(Action.Manage, 'all');
     } else {
-      can(Action.Read, 'all');
+      can(Action.Read, Product);
+      can(Action.Read, Order, { userId: fullUser.id });
+      can(Action.Read, Cart, { userId: fullUser.id });
+      can(Action.Read, Payment, { userId: fullUser.id });
+      can(Action.Read, Address, { userId: fullUser.id });
     }
 
     return build({

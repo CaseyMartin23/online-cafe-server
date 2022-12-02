@@ -12,7 +12,7 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Get("logout")
-  public async logout(@Request() req) {
+  public async logout(@Request() req: any) {
     return await this.authService.logout(req.user.sub);
   }
 
@@ -24,7 +24,7 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Post("register")
-  public async register(@Request() req, @Body() registerUserDto: RegisterUserDto) {
+  public async register(@Request() req: any, @Body() registerUserDto: RegisterUserDto) {
     return await this.authService.registerIdentifiedUser(req.user.sub, registerUserDto);
   }
 
@@ -35,20 +35,20 @@ export class AuthController {
 
   @UseGuards(RefreshTokenGuard)
   @Get("refresh")
-  public async refreshUserTokens(@Request() req) {
+  public async refreshUserTokens(@Request() req: any) {
     const user = req.user;
     return await this.authService.refreshUserTokens(user.sub, user.refreshToken);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get("isAdmin")
-  public async isAdminUser(@Request() req) {
+  public async isAdminUser(@Request() req: any) {
     return await this.authService.isAdmin(req.user.sub);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get("profile")
-  public async getProfile(@Request() req) {
+  public async getProfile(@Request() req: any) {
     return await this.authService.userProfile(req.user.sub);
   }
 }

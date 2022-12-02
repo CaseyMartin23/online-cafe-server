@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Order } from 'src/schemas/order.schema';
 import { Product } from 'src/schemas/product.schema';
 import { Action } from '../casl.action';
 import { AppAbility, CaslAbilityFactory } from '../casl/casl-ability.factory';
@@ -46,5 +47,11 @@ export class PoliciesGuard implements CanActivate {
 export class CreateProductPolicyHandler implements IPolicyHandler {
   handle(ability: AppAbility) {
     return ability.can(Action.Create, Product);
+  }
+}
+
+export class ViewAllOrdersPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Read, Order);
   }
 }
