@@ -138,9 +138,11 @@ export class AuthService {
     }
   }
 
-  public async refreshUserTokens(userId: string, refreshToken: string) {
+  public async refreshUserTokens(tokenUserId: string, paramUserId: string, refreshToken: string) {
     try {
-      const user = await this.userService.findOne(userId);
+      if (tokenUserId !== paramUserId) throw new ForbiddenException("Access Denied");
+
+      const user = await this.userService.findOne(tokenUserId);
       if (!user || !user.refreshToken) throw new ForbiddenException("Access Denied");
 
       const isValidToken = compare(user.refreshToken, refreshToken);

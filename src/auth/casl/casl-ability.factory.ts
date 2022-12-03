@@ -35,7 +35,7 @@ export class CaslAbilityFactory {
       can(Action.Read, Order, { userId: fullUser.id });
       can(Action.Read, Cart, { userId: fullUser.id });
       can(Action.Read, Payment, { userId: fullUser.id });
-      can(Action.Read, Address, { userId: fullUser.id });
+      can(Action.Manage, Address, { userId: fullUser.id });
     }
 
     return build({

@@ -1,8 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IsString } from 'class-validator';
-import { CreateDeliveryDto } from './createDelivery.dto';
+import { IsString, IsMongoId, IsEnum } from 'class-validator';
+import { DeliveryStatus } from 'src/schemas/delivery.schema';
 
-export class UpdateDeliveryDto extends PartialType(CreateDeliveryDto) {
+export class UpdateDeliveryDto {
   @IsString()
-  status: string;
+  type: string;
+
+  @IsEnum(DeliveryStatus)
+  status: DeliveryStatus;
+  
+  @IsMongoId()
+  addressId: string;
 }

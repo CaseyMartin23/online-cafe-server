@@ -8,6 +8,8 @@ export enum DeliveryType {
   DoorDash = "door-dash",
 }
 export enum DeliveryStatus {
+  Partial = "partial",
+  Quote = "quote",
   Created = "created",
   Confirmed = "confirmed",
   EnrouteToPickup = "enroute_to_pickup",
@@ -25,6 +27,9 @@ export class Delivery extends DefaultSchema {
   @Prop({ type: String, enum: DeliveryType })
   type: DeliveryType;
 
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
+  userId: string;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Order' })
   orderId: string;
 
@@ -33,6 +38,36 @@ export class Delivery extends DefaultSchema {
 
   @Prop({ type: String, enum: DeliveryStatus })
   status: DeliveryStatus = DeliveryStatus.Created;
+
+  @Prop(String)
+  externalDeliveryId?: string;
+  
+  @Prop(String)
+  currency?: string;
+  
+  @Prop(String)
+  fee?: string;
+  
+  @Prop(String)
+  pickupExternalStoreId?: string;
+  
+  @Prop(String)
+  dropoffInstructions?: string;
+  
+  @Prop(String)
+  pickupTimeEstimated?: Date;
+  
+  @Prop(String)
+  dropoffTimeEstimated?: Date;
+  
+  @Prop(String)
+  supportReference?: string;
+  
+  @Prop(String)
+  trackingUrl?: string;
+  
+  @Prop(String)
+  actionIfUndeliverable?: string;
 }
 
 export const DeliverySchema = SchemaFactory.createForClass(Delivery);

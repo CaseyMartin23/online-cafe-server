@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CartService } from 'src/cart/cart.service';
@@ -21,7 +21,7 @@ export class OrdersService {
       const foundUserOrder = await this.orderModel.findOne({ userId });
       
       if(!foundUserOrder) {
-        userOrder = await this.createUserOrder(userId);
+        userOrder = await this.createPartialUserOrder(userId);
       } else {
         userOrder = foundUserOrder;
       }
@@ -37,19 +37,58 @@ export class OrdersService {
     return `This action returns all orders`;
   }
 
-  public async findOne(id: number) {
-    return `This action returns a #${id} order`;
+  public async findOne(userId: string, id: string) {
+    try {
+      const foundUserOrder = await this.orderModel.findOne({ id, userId })
+      
+      if(!foundUserOrder){
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: "No order found.",
+        }, HttpStatus.NOT_FOUND);
+      }
+
+      const parsedOrder = this.parseOrders(foundUserOrder);
+      return responseHandler(true, { items: parsedOrder });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
-  public async update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  public async update(userId: string, id: string, updateOrderDto: UpdateOrderDto) {
+    try {
+      const foundUserOrder = await this.orderModel.findOne({ id, userId });
+      
+      if(!foundUserOrder) {
+        const status = HttpStatus.NOT_FOUND;
+        throw new HttpException({ status, error: "No order found." }, status);
+      }
+
+      await this.orderModel.findOneAndUpdate(foundUserOrder.id, {
+        $set: {
+          ...updateOrderDto,
+          dateUpdated: new Date()
+        }
+      });
+      const updatedUserOrder = await this.findOne(userId, id);
+
+      if(!updatedUserOrder.success) {
+        const { statusCode, message } = updatedUserOrder.error;
+        throw new HttpException({ status: statusCode, error: message }, statusCode);
+      }
+
+      const { items } = updatedUserOrder.data
+      return responseHandler(true, { items });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
-  public async remove(id: number) {
+  public async remove(id: string) {
     return `This action removes a #${id} order`;
   }
 
-  private async createUserOrder(userId: string) {
+  private async createPartialUserOrder(userId: string) {
     const { data } = await this.cartService.getUserCart(userId);
     const [userCart]: CartDocument[] = data.items;
     const createdOrder = await this.orderModel.create({

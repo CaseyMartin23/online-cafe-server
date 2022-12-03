@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
+import { CheckPolicies, ManageAddressPolicyHandler } from 'src/auth/guards/policies.guard';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/createAddress.dto';
 import { UpdateAddressDto } from './dto/updateAddress.dto';
 
 @UseGuards(AccessTokenGuard)
+@CheckPolicies(new ManageAddressPolicyHandler())
 @Controller('addresses')
 export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}

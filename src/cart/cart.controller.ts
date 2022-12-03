@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Body, Patch, UseGuards, Delete, Request, Query } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
+import { CheckPolicies, ManageCartPolicyHandler } from 'src/auth/guards/policies.guard';
 import { CartService } from './cart.service';
 import { AddItemToCartDto } from './dto/addToCart.dto';
 import { UpdateCartItemDto } from './dto/updateCartItem.dto';
 
 @UseGuards(AccessTokenGuard)
+@CheckPolicies(new ManageCartPolicyHandler())
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}

@@ -3,9 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CartService } from 'src/cart/cart.service';
+import { OrdersService } from 'src/orders/orders.service';
 import { Payment, PaymentDocument } from 'src/schemas/payment.schema';
 import { responseHandler } from 'src/utils/responseHandling.util';
 import Stripe from 'stripe';
+import { CreatePaymentDto } from './dto/createPayment.dto';
 import { UpdatePaymentDto } from './dto/updatePayment.dto';
 
 @Injectable()
@@ -16,8 +18,34 @@ export class PaymentsService {
     @InjectModel(Payment.name) private paymentModel: Model<PaymentDocument>,
     private configService: ConfigService,
     private cartService: CartService,
+    private orderService: OrdersService,
   ) {
     this.stripe = new Stripe(this.configService.get("STRIPE_API_SECRET_KEY"), { apiVersion: "2022-11-15" });
+  }
+
+  public async createPayment(userId: string, paymentData: CreatePaymentDto) {
+    try {
+      const { type, orderId } = paymentData;
+      const orderResponse = await this.orderService.findOne(userId, orderId);
+
+      if (!orderResponse.success) {
+        const { statusCode, message } = orderResponse.error;
+        throw new HttpException({ status: statusCode, error: message }, statusCode);
+      }
+
+      const creationDate = new Date();
+      const paymentCreated = await this.paymentModel.create({
+        userId,
+        type,
+        dateCreated: creationDate,
+        dateUpdated: creationDate,
+      })
+
+      await this.orderService.update(userId, orderId, { paymentId: paymentCreated.id });
+      return responseHandler(true, { message: "Successfully created payment." });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
   public async createStripeIntent(userId: string) {
@@ -26,14 +54,14 @@ export class PaymentsService {
       const userCartResponse = await this.cartService.getUserCart(userId);
       const noUserCart = userCartResponse.data.items.length === 0;
       const noCartItems = userCartResponse.data.items[0].cartItems.length === 0;
-      if(!userCartResponse.success || noUserCart) {
+      if (!userCartResponse.success || noUserCart) {
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
           error: "No cart found."
         }, HttpStatus.NOT_FOUND)
       }
 
-      if(noCartItems) {
+      if (noCartItems) {
         throw new HttpException({
           status: HttpStatus.BAD_REQUEST,
           error: "No items in cart.",
@@ -43,7 +71,7 @@ export class PaymentsService {
       const [userCart] = userCartResponse.data.items;
       const cartItemsTotal = parseFloat(userCart.totalPrice);
       console.log({ userCartResponse, userCart, cartItemsTotal });
-      
+
       // get delivery price
       const deliveryPrice = 5.00;
       const totalPrice = cartItemsTotal + deliveryPrice;
@@ -59,7 +87,7 @@ export class PaymentsService {
 
   public async findAll(userId: string) {
     try {
-      
+
     } catch (err) {
       return responseHandler(false, err);
     }
@@ -68,7 +96,7 @@ export class PaymentsService {
 
   public async findOne(userId: string, id: string) {
     try {
-      
+
     } catch (err) {
       return responseHandler(false, err);
     }
@@ -77,7 +105,7 @@ export class PaymentsService {
 
   public async update(userId: string, id: string, updatePaymentDto: UpdatePaymentDto) {
     try {
-      
+
     } catch (err) {
       return responseHandler(false, err);
     }
@@ -86,7 +114,7 @@ export class PaymentsService {
 
   public async remove(userId: string, id: string) {
     try {
-      
+
     } catch (err) {
       return responseHandler(false, err);
     }

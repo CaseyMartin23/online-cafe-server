@@ -2,9 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { OrdersService } from './orders.service';
 import { UpdateOrderDto } from './dto/updateOrder.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
-import { CheckPolicies, ViewAllOrdersPolicyHandler } from 'src/auth/guards/policies.guard';
+import { CheckPolicies, ManageOrdersPolicyHandler } from 'src/auth/guards/policies.guard';
 
 @UseGuards(AccessTokenGuard)
+@CheckPolicies(new ManageOrdersPolicyHandler())
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
@@ -14,24 +15,23 @@ export class OrdersController {
     return await this.ordersService.create(req.user.sub);
   }
 
-  @CheckPolicies(new ViewAllOrdersPolicyHandler())
   @Get()
   public async findAll() {
     return await this.ordersService.findAll();
   }
 
   @Get(':id')
-  public async findOne(@Param('id') id: string) {
-    return await this.ordersService.findOne(+id);
+  public async findOne(@Request() req: any, @Param('id') id: string) {
+    return await this.ordersService.findOne(req.user.sub, id);
   }
 
   @Patch(':id')
-  public async update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return await this.ordersService.update(+id, updateOrderDto);
+  public async update(@Request() req: any, @Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
+    return await this.ordersService.update(req.user.sub, id, updateOrderDto);
   }
 
   @Delete(':id')
   public async remove(@Param('id') id: string) {
-    return await this.ordersService.remove(+id);
+    return await this.ordersService.remove(id);
   }
 }

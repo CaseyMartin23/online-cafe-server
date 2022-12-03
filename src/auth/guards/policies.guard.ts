@@ -1,5 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Address } from 'src/schemas/address.schema';
+import { Cart } from 'src/schemas/cart.schema';
 import { Order } from 'src/schemas/order.schema';
 import { Product } from 'src/schemas/product.schema';
 import { Action } from '../casl.action';
@@ -44,14 +46,38 @@ export class PoliciesGuard implements CanActivate {
   }
 }
 
+export class ManageAddressPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Manage, Address);
+  }
+}
+
+export class ManageCartPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Manage, Cart);
+  }
+}
+
+export class ManageDeliveryPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Manage, Cart);
+  }
+}
+
 export class CreateProductPolicyHandler implements IPolicyHandler {
   handle(ability: AppAbility) {
     return ability.can(Action.Create, Product);
   }
 }
 
-export class ViewAllOrdersPolicyHandler implements IPolicyHandler {
+export class ManageOrdersPolicyHandler implements IPolicyHandler {
   handle(ability: AppAbility) {
-    return ability.can(Action.Read, Order);
+    return ability.can(Action.Manage, Order);
+  }
+}
+
+export class ManagePaymentPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Manage, Order);
   }
 }

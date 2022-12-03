@@ -18,11 +18,11 @@ export const hash = (password: string): string => {
   return encryptPassowrd(password, salt) + salt;
 };
 
-export const compare = (hash: string, passowrd: string): Boolean => {
+export const compare = (hashedValue: string, rawValue: string): Boolean => {
   const originalPassLength = Number(process.env.ORIGINAL_SECRET_LENGTH);
-  const salt = hash.slice(originalPassLength);
-  const originalPassHash = hash.slice(0, originalPassLength);
-  const currentPassHash = encryptPassowrd(passowrd, salt);
+  const salt = hashedValue.slice(originalPassLength);
+  const originalPassHash = hashedValue.slice(0, originalPassLength);
+  const currentPassHash = encryptPassowrd(rawValue, salt);
   const isMatch = originalPassHash === currentPassHash;
   return isMatch;
 };

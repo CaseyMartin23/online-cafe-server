@@ -4,35 +4,47 @@ import { Model } from 'mongoose';
 import { AddressesService } from 'src/addresses/addresses.service';
 import { Delivery, DeliveryDocument, DeliveryStatus, DeliveryType } from 'src/schemas/delivery.schema';
 import { DoordashClient } from './doordash.client';
-import { responseHandler } from 'src/utils/responseHandling.util';
+import { responseHandler, ResponseHandlerType } from 'src/utils/responseHandling.util';
 import { CreateDeliveryDto } from './dto/createDelivery.dto';
 import { UpdateDeliveryDto } from './dto/updateDelivery.dto';
 import { GetDeliveryQuote } from './dto/getDeliveryQuote.dto';
 import { ConfigService } from '@nestjs/config';
+import { OrdersService } from 'src/orders/orders.service';
+import { CreateDeliveryQuoteDto } from './dto/createDeliveryQuote.dto';
 
 @Injectable()
 export class DeliveriesService {
-  private doordashClient = new DoordashClient()
+  private deliveryType = null;  
+  private doordashClient = null;
 
   constructor(
     @InjectModel(Delivery.name) private deliverModel: Model<DeliveryDocument>,
     private addressService: AddressesService,
     private configService: ConfigService,
-  ) {}
+    private orderService: OrdersService,
+  ) {
+    const deliveryMethodType = this.configService.get("DELIVERY_TYPE");
+    this.deliveryType = deliveryMethodType;
+    
+    if(deliveryMethodType === DeliveryType.DoorDash) {
+      this.doordashClient = new DoordashClient();
+    }
+  }
 
-  public async addUserDelivery(userId: string) {
+  public async createPartialDelivery(userId: string, { orderId }: CreateDeliveryDto) {
     try {
-      // const userAddressResponse = await this.addressService.getSelectedUserAddress(userId);
-      // const selectedAddressId = userAddressResponse.data.items[0].id;
-      // const selectedUserAddress = await this.addressService.validateAddress(selectedAddressId)
-      // const newDelivery = await this.deliverModel.create({
-      //   type: DeliveryType.DoorDash,
-      //   userId,
-      //   addressId: selectedUserAddress.id,
-      //   status: DeliveryStatus.Created,
-      // })
-      // const parsedDeliveries = this.parseDelivery(newDelivery);
-      // return responseHandler(true, { items: parsedDeliveries });
+      const userAddressResponse = await this.addressService.getSelectedUserAddress(userId);
+      const selectedAddressId = userAddressResponse.data.items[0]._id.toString();
+      const selectedUserAddress = await this.addressService.validateAddress(selectedAddressId)
+      const newDelivery = await this.deliverModel.create({
+        type: this.deliveryType,
+        userId,
+        addressId: selectedUserAddress.id,
+        status: DeliveryStatus.Partial,
+      })
+      const parsedDelivery = this.parseDelivery(newDelivery);
+      await this.orderService.update(userId, orderId, { deliveryId: newDelivery.id });
+      return responseHandler(true, { items: parsedDelivery });
     } catch (err) {
       console.error(err);
       return responseHandler(false, err)
@@ -61,20 +73,18 @@ export class DeliveriesService {
     }
   }
 
-  public async getQuote(userId: string) {
-    const deliveryType = this.configService.get("DELIVERY_TYPE");
-
-    if(deliveryType === DeliveryType.DoorDash){
-      return this.getDoordashDeliveryQuote(userId);
+  public async createQuote(userId: string, id: string) {
+    if (this.deliveryType === DeliveryType.DoorDash) {
+      return this.createDoordashDeliveryQuote(userId, id);
     }
-    return this.getInHouseDeliveryQuote(userId)
+    return this.createInHouseDeliveryQuote(userId, id);
   }
 
-  private async getInHouseDeliveryQuote(userId: string) {
+  private async createInHouseDeliveryQuote(userId: string, id: string) {
     // calculate in-house delivery cost
   }
 
-  private async getDoordashDeliveryQuote(userId: string) {
+  private async createDoordashDeliveryQuote(userId: string, id: string) {
     try {
       const userAddress = await this.getUserSelectedAddress(userId);
       const deliveryQuote = {
@@ -88,8 +98,38 @@ export class DeliveriesService {
         dropoffContactGivenName: userAddress.firstName,
         dropoffContactFamilyName: userAddress.lastName,
       }
-      const doordashQuote = await this.doordashClient.getDeliveryQuote(deliveryQuote);
-      return doordashQuote;
+      const doordashQuote: ResponseHandlerType = await this.doordashClient.getDeliveryQuote(deliveryQuote);
+      const {
+        external_delivery_id,
+        currency,
+        delivery_status,
+        fee,
+        pickup_external_store_id,
+        dropoff_instructions,
+        pickup_time_estimated,
+        dropoff_time_estimated,
+        support_reference,
+        tracking_url,
+        action_if_undeliverable,
+      } = doordashQuote.data.items[0];
+      
+      const { id: updatedDeliveryId } = await this.deliverModel.findByIdAndUpdate(id, {
+        $set: {
+            externalDeliveryId: external_delivery_id,
+            currency,
+            status: delivery_status,
+            fee: parseFloat(`${fee / 100}`).toFixed(2),
+            pickupExternalStoreId: pickup_external_store_id,
+            dropoffInstructions: dropoff_instructions,
+            pickupTimeEstimated: pickup_time_estimated,
+            dropoffTimeEstimated: dropoff_time_estimated,
+            supportReference: support_reference,
+            trackingUrl: tracking_url,
+            actionIfUndeliverable: action_if_undeliverable,
+        }
+      });
+
+      return await this.getUserDelivery(userId, updatedDeliveryId);
     } catch (err) {
       responseHandler(false, err);
     }
@@ -161,28 +201,22 @@ export class DeliveriesService {
 
   private async getUserSelectedAddress(userId: string) {
     const userAddressResponse = await this.addressService.getSelectedUserAddress(userId);
-    if(!userAddressResponse.success) {
+    if (!userAddressResponse.success) {
       throw new HttpException({
         status: userAddressResponse.error.statusCode,
         error: userAddressResponse.error.message,
       }, userAddressResponse.error.statusCode);
     }
-    
+
     const selectedAddress = userAddressResponse.data.items[0];
-    if(!selectedAddress) {
+    if (!selectedAddress) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,
         error: "No selected address found.",
       }, HttpStatus.NOT_FOUND)
     }
-    
+
     return await this.addressService.validateAddress(selectedAddress._id.toString());
-  }
-
-  private async acceptDoordashQuote() {
-    // const acceptedDoordashQuote = await this.doordashClient.deliveryQuoteAccept('D-12345');
-    // console.log({ acceptedDoordashQuote });
-
   }
 
   private async createDoordashDelivery() {
