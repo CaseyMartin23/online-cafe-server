@@ -25,19 +25,19 @@ export class Payment extends DefaultSchema {
   status: PaymentStatus;
 
   @Prop(String)
-  holderName?: string;
-
+  stripeId?: string;
+  
   @Prop(String)
-  cardNumber?: string;
-
+  amount?: string;
+  
+  @Prop(Date)
+  createdOnStripe?: Date;
+  
   @Prop(String)
-  fractalCardNumber?: string;
-
+  currency?: string;
+  
   @Prop(String)
-  username?: string;
-
-  @Prop(String)
-  email?: string;
+  stripeStatus?: string;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

@@ -18,7 +18,7 @@ export class OrdersService {
   public async create(userId: string) {
     try {
       let userOrder = null;
-      const foundUserOrder = await this.orderModel.findOne({ userId });
+      const foundUserOrder = await this.orderModel.findOne({ userId, status: OrderStatuses.Partial });
       
       if(!foundUserOrder) {
         userOrder = await this.createPartialUserOrder(userId);
@@ -94,7 +94,7 @@ export class OrdersService {
     const createdOrder = await this.orderModel.create({
       userId,
       status: OrderStatuses.Partial,
-      cartId: userCart.id,
+      cartId: userCart._id.toString(),
       dateCreated: new Date(),
       dateUpdated: new Date(),
     })

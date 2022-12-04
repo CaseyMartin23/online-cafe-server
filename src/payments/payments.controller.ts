@@ -4,6 +4,7 @@ import { UpdatePaymentDto } from './dto/updatePayment.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { CreatePaymentDto } from './dto/createPayment.dto';
 import { CheckPolicies, ManagePaymentPolicyHandler } from 'src/auth/guards/policies.guard';
+import { CreatePaymentIntentDto } from './dto/createPaymentIntent.dto';
 
 @UseGuards(AccessTokenGuard)
 @CheckPolicies(new ManagePaymentPolicyHandler())
@@ -12,8 +13,8 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('intent')
-  public async paymentIntent(@Request() req: any) {
-    return await this.paymentsService.createStripeIntent(req.user.sub);
+  public async paymentIntent(@Request() req: any, @Body() createPaymentIntentDto: CreatePaymentIntentDto) {
+    return await this.paymentsService.createStripeIntent(req.user.sub, createPaymentIntentDto);
   }
 
   @Post()

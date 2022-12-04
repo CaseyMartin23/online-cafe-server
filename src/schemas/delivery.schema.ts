@@ -4,8 +4,8 @@ import { DefaultSchema } from './default.shema';
 
 export type DeliveryDocument = Delivery & Document;
 export enum DeliveryType {
-  InHouse = "in-house",
-  DoorDash = "door-dash",
+  InHouse = "in_house",
+  DoorDash = "doordash",
 }
 export enum DeliveryStatus {
   Partial = "partial",
@@ -37,7 +37,7 @@ export class Delivery extends DefaultSchema {
   addressId: string;
 
   @Prop({ type: String, enum: DeliveryStatus })
-  status: DeliveryStatus = DeliveryStatus.Created;
+  status: DeliveryStatus = DeliveryStatus.Partial;
 
   @Prop(String)
   externalDeliveryId?: string;
