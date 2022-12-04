@@ -66,7 +66,8 @@ export class PaymentsService {
       } = await this.createStripePaymentIntent(totalPrice);
       const paymentId = await this.getUserOrderPaymentId(userId, orderId);
       
-      await this.paymentModel.findByIdAndUpdate(paymentId, {
+      await this.paymentModel.findByIdAndUpdate(paymentId
+        , {
         $set: {
           stripeId: id,
           amount: parseFloat(`${amount / 100}`).toFixed(2),
