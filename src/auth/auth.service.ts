@@ -50,7 +50,7 @@ export class AuthService {
       if (refreshToken) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
-          error: "Already loggedin!",
+          error: "User already logged in.",
         }, HttpStatus.CONFLICT)
       }
 
@@ -94,7 +94,7 @@ export class AuthService {
       if (existingUser) {
         throw new HttpException({
           status: HttpStatus.CONFLICT,
-          error: "Email already exists!",
+          error: "Email already exists.",
         }, HttpStatus.CONFLICT);
       }
 
