@@ -16,7 +16,7 @@ export class Product extends DefaultSchema {
   price: string;
 
   @Prop([String])
-  categories: string[];
+  categories: string;
 
   @Prop([String])
   images: string[];

@@ -10,7 +10,7 @@ export class CreateProductDto {
   @IsString()
   price: string;
 
-  @MaxLength(15, {
+  @MaxLength(3, {
     each: true,
   })
   categories: string[];
