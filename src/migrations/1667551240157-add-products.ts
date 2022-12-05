@@ -9,7 +9,7 @@ export const up = async () => {
     name: "Test Product",
     description: "This is test product",
     price: "23.99",
-    categories: "test",
+    category: "test",
     images: ["test-image.png", "test-img.jpg"],
     tags: ["new", "product"],
   } as ProductDocument;

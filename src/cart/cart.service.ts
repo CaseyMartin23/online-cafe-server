@@ -247,8 +247,8 @@ export class CartService {
       const productResponse = await this.productService.findOne(productId)
       const foundCart = await this.cartModel.findOne({ userId });
       const [foundProduct] = productResponse.data.items;
-      const { _id, name, price } = foundProduct;
-      const validProductId = _id.toString();
+      const { id, name, price } = foundProduct;
+      const validProductId = id.toString();
       const { id: cartId, totalPrice, cartItems } = foundCart;
       const allCartItems = cartItems.length === 0 ? [] : await this.cartItemModel.find({ userId });
       const userCartItemsExcludingCurrent = allCartItems.filter(({ id }) => id !== cartItemId);

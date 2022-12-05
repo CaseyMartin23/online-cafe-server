@@ -5,5 +5,5 @@ export class AddItemToCartDto {
     productId: string;
 
     @IsNumber()
-    quantity: number;
+    quantity?: number = 1;
 };

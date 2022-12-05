@@ -115,7 +115,17 @@ export class ProductsService {
     const arrayOfProducts = Array.isArray(products) ? products : [products];
     return arrayOfProducts.map((product) => {
       const { createdBy, ...rest } = product.toObject();
-      return rest
+      return {
+        id: rest._id.toString(),
+        category: rest.category,
+        dateCreated: rest.dateCreated,
+        dateUpdated: rest.dateUpdated,
+        description: rest.description,
+        images: rest.images,
+        name: rest.name,
+        price: rest.price,
+        tags: rest.tags,
+      }
     })
   }
 }
