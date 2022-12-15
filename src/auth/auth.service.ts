@@ -1,6 +1,7 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/registerUser.dto';
@@ -11,6 +12,7 @@ import { responseHandler } from 'src/utils/responseHandling.util';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private configService: ConfigService,
     private userService: UserService,
@@ -180,6 +182,11 @@ export class AuthService {
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedToken = hash(refreshToken);
     await this.userService.update(userId, { refreshToken: hashedToken });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  logoutUsersOlderThanSevenDays() {
+    this.logger.debug('Called every day');
   }
 
 }

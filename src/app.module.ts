@@ -11,11 +11,13 @@ import { CartModule } from './cart/cart.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { PaymentsModule } from './payments/payments.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.DATABASE_URL, { useNewUrlParser: true, dbName: 'online-cafe' }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     CaslModule,

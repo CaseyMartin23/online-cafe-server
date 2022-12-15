@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, UseGuards, Delete, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, UseGuards, Delete, Request, Query, Param } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { CheckPolicies, ManageCartPolicyHandler } from 'src/auth/guards/policies.guard';
 import { CartService } from './cart.service';
@@ -26,8 +26,8 @@ export class CartController {
     return await this.cartService.updateCartItem(req.user.sub, updateCartDto);
   }
 
-  @Delete('remove-item')
-  public async removeCartItem(@Request() req: any, @Query('cartItemId') cartItemId: string) {
+  @Delete('remove-item/:id')
+  public async removeCartItem(@Request() req: any, @Param('id') cartItemId: string) {
     return await this.cartService.removeCartItem(req.user.sub, cartItemId);
   }
 

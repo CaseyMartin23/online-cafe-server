@@ -24,7 +24,7 @@ export class CartService {
 
   public async addCartItem(userId: string, itemToAddData: AddItemToCartDto) {
     try {
-      let response: ResponseHandlerType | { message: string } = { message: "Successfully added item to cart" }
+      let response: ResponseHandlerType = null;
       const { productId, quantity } = itemToAddData;
       const foundProduct = await this.productService.findOne(productId)
       const foundCart = await this.getUserCart(userId);
@@ -33,19 +33,19 @@ export class CartService {
         return foundProduct;
       }
       this.checkQuantity(quantity)
-      
+
       if (!foundCart.success && foundCart.error.statusCode === 404) {
         response = await this.createCartAndAddItem(userId, itemToAddData);
       } else {
         response = await this.addCartItemToCart(userId, itemToAddData);
       }
-      
+
       return response;
     } catch (err) {
       return responseHandler(false, err);
     }
   }
-  
+
   public async getUserCart(userId: string) {
     try {
       const foundCart = await this.cartModel.findOne({ userId });
@@ -127,7 +127,7 @@ export class CartService {
         }
       })
 
-      return responseHandler(true, { message: "Successfully remove cartItem" })
+      return await this.getUserCart(userId);
     } catch (err) {
       return responseHandler(false, err)
     }
@@ -175,27 +175,56 @@ export class CartService {
       }, HttpStatus.UNAUTHORIZED)
     }
   }
-  
+
   private async getCartDetails(userCart: Partial<Cart>) {
     const { userId } = userCart;
     const userCartItems = await this.cartItemModel.find({ userId });
-    const detailedCartItems = userCartItems.map((cartItem) => cartItem.toObject());
+    const detailedCartItems = await this.getCartItemDetails(userCartItems);
     const detailedCart = { ...userCart, cartItems: detailedCartItems };
     return this.parseCartAndCartItems(detailedCart);
   }
-  
+
+  private async getCartItemDetails(userCartItems: CartItemDocument[]) {
+    const detailedCartItems = await Promise.all(userCartItems.map(async (cartItem) => {
+      const { productId, ...rest } = cartItem.toObject();
+      const productResponse = await this.productService.findOne(productId);
+      const product = productResponse.data.items[0];
+      const detailedItem = {
+        ...rest,
+        product,
+      }
+      return detailedItem;
+    }));
+
+    return detailedCartItems;
+  }
+
   private parseRawCartData(rawItem: any) {
     let parsedResult = rawItem;
     if (parsedResult.userId) {
       const { userId, ...rest } = parsedResult;
-      parsedResult = rest
+      if (rest.cartItems) {
+        parsedResult = {
+          id: rest._id.toString(),
+          cartItems: rest.cartItems,
+          totalPrice: rest.totalPrice,
+        }
+      } else {
+        parsedResult = {
+          id: rest._id.toString(),
+          product: rest.product,
+          name: rest.name,
+          quantity: rest.quantity,
+          price: rest.price,
+          subTotalPrice: rest.subTotalPrice,
+        }
+      }
     }
     return parsedResult;
   }
 
   private parseCartAndCartItems(rawItems: any | any[]) {
     const rawItemsArray = Array.isArray(rawItems) ? rawItems : [rawItems];
-
     if (rawItemsArray.length < 1) return [];
 
     const parsedItemData = rawItemsArray.map((item) => {
@@ -291,7 +320,7 @@ export class CartService {
         }
       })
 
-      return responseHandler(true, { message: "Successfully updated cart" })
+      return await this.getUserCart(userId);
     } catch (err) {
       return responseHandler(false, err)
     }
