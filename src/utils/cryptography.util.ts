@@ -1,14 +1,11 @@
 import { randomBytes, scryptSync } from 'crypto';
 
 const encryptPassowrd = (password: string, salt: string) => {
-    const saltRounds = Number(process.env.SALT_ROUNDS);
-    let encryptedPass = password;
-
-    for(let index = 0; index < saltRounds; index++) {
-      const hashLength = Number(process.env.HASH_KEY_LENGTH) 
-      encryptedPass = scryptSync(encryptedPass, salt, hashLength).toString('hex'); 
-    }
-
+  const saltRounds = Number(process.env.SALT_ROUNDS);
+  let encryptedPass = password;
+  for (let index = 0; index < saltRounds; index++) {
+    encryptedPass = scryptSync(encryptedPass, salt, Number(process.env.HASH_KEY_LENGTH)).toString('hex');
+  }
   return encryptedPass;
 };
 
@@ -23,6 +20,5 @@ export const compare = (hashedValue: string, rawValue: string): Boolean => {
   const salt = hashedValue.slice(originalPassLength);
   const originalPassHash = hashedValue.slice(0, originalPassLength);
   const currentPassHash = encryptPassowrd(rawValue, salt);
-  const isMatch = originalPassHash === currentPassHash;
-  return isMatch;
+  return originalPassHash === currentPassHash;
 };

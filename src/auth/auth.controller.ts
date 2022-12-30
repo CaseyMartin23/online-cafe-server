@@ -37,7 +37,8 @@ export class AuthController {
   @Get("refresh/:id")
   public async refreshUserTokens(@Request() req: any, @Param("id") id: string) {
     const { sub, refreshToken } = req.user;
-    return await this.authService.refreshUserTokens(sub, id, refreshToken);
+    const result = await this.authService.refreshUserTokens(sub, id, refreshToken);
+    return result;
   }
 
   @UseGuards(AccessTokenGuard)

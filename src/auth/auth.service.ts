@@ -5,7 +5,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { UserService } from 'src/user/user.service';
 import { RegisterUserDto } from './dto/registerUser.dto';
-import { hash, compare } from "../utils/passwordHashing.util";
+import { hash, compare } from "../utils/cryptography.util";
 import { LoginUserDto } from './dto/login.dto';
 import { UserTypes } from 'src/schemas/user.schema';
 import { responseHandler } from 'src/utils/responseHandling.util';
@@ -143,10 +143,10 @@ export class AuthService {
   public async refreshUserTokens(tokenUserId: string, paramUserId: string, refreshToken: string) {
     try {
       if (tokenUserId !== paramUserId) throw new ForbiddenException("Access Denied");
-
+      
       const user = await this.userService.findOne(tokenUserId);
       if (!user || !user.refreshToken) throw new ForbiddenException("Access Denied");
-
+      
       const isValidToken = compare(user.refreshToken, refreshToken);
       if (!isValidToken) throw new ForbiddenException("Access Denied");
 
