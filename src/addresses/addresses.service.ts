@@ -153,8 +153,8 @@ export class AddressesService {
   private parseAddresses(addresses: AddressDocument | AddressDocument[]) {
     const addressArray = Array.isArray(addresses) ? addresses : [addresses];
     const parsedAddresses = addressArray.map((address) => {
-      const { userId, ...rest } = address.toObject();
-      return rest;
+      const { userId, _id, ...rest } = address.toObject();
+      return { ...rest, id: _id, isSelected: rest.isSelected === "true" ? true : false };
     })
     return parsedAddresses;
   }
