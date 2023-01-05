@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Address, AddressDocument } from 'src/schemas/address.schema';
+import { Address, AddressDocument, PartialAddress } from 'src/schemas/address.schema';
 import { responseHandler } from 'src/utils/responseHandling.util';
 import { CreateAddressDto } from './dto/createAddress.dto';
 import { UpdateAddressDto } from './dto/updateAddress.dto';
@@ -12,19 +12,10 @@ export class AddressesService {
 
   public async addUserAddress(userId: string, createAddressDto: CreateAddressDto) {
     try {
-      const { firstName, lastName, streetAddress, aptAddress, city, state, country, zip, phoneNumber } = createAddressDto;
       const currentDate = new Date();
       const newUserAddress = await this.addressModel.create({
+        ...createAddressDto,
         userId,
-        firstName,
-        lastName,
-        streetAddress,
-        aptAddress,
-        city,
-        state,
-        country,
-        zip,
-        phoneNumber,
         isSelected: false,
         dateCreated: currentDate,
         dateUpdated: currentDate,
@@ -83,7 +74,7 @@ export class AddressesService {
           dateUpdated: new Date(),
         }
       });
-      return responseHandler(true, { message: "Successfully updated address" })
+      return responseHandler(true, { message: "Successfully selected address" });
     } catch (err) {
       return responseHandler(false, err);
     }
@@ -109,7 +100,8 @@ export class AddressesService {
     try {
       const foundAddress = await this.validateAddress(addressId);
       this.validateUserAddressAuth(userId, foundAddress.userId.toString())
-      await this.addressModel.findOneAndDelete(foundAddress.id);
+      console.log({ receivedId: addressId, foundAddressId: foundAddress.id })
+      // await this.addressModel.findOneAndDelete(foundAddress.id);
       return responseHandler(true, { message: "Successfully removed address" });
     } catch (err) {
       return responseHandler(false, err);
@@ -137,8 +129,8 @@ export class AddressesService {
   }
 
   public getUserAddressString(userAddress: Partial<AddressDocument>) {
-    const { streetAddress, aptAddress, city, state, zip, country } = userAddress.toObject();
-    return `${streetAddress}, ${aptAddress ? `${aptAddress},` : ""} ${city}, ${state} ${zip}${country ? `, ${country}` : ""}`;
+    const { streetAddress, aptAddress, city, state, zip} = userAddress.toObject();
+    return `${streetAddress}, ${aptAddress ? `${aptAddress},` : ""} ${city}, ${state} ${zip}, United States`;
   }
 
   private validateUserAddressAuth(userId: string, addressUserId: string) {
@@ -154,8 +146,17 @@ export class AddressesService {
     const addressArray = Array.isArray(addresses) ? addresses : [addresses];
     const parsedAddresses = addressArray.map((address) => {
       const { userId, _id, ...rest } = address.toObject();
-      return { ...rest, id: _id, isSelected: rest.isSelected === "true" ? true : false };
+      return { ...rest, id: _id } as PartialAddress;
     })
-    return parsedAddresses;
+    return this.sortAddresses(parsedAddresses);
+  }
+
+  private sortAddresses(addresses: PartialAddress[]) {
+    let sortedAddresses = [];
+    addresses.forEach((address) => {
+      if(address.isSelected) sortedAddresses.unshift(address);
+      else sortedAddresses.push(address);
+    })
+    return sortedAddresses;
   }
 }

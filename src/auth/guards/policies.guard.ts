@@ -3,6 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { Address } from 'src/schemas/address.schema';
 import { Cart } from 'src/schemas/cart.schema';
 import { Order } from 'src/schemas/order.schema';
+import { Payment } from 'src/schemas/payment.schema';
+import { PaymentMethod } from 'src/schemas/paymentMethod.schema';
 import { Product } from 'src/schemas/product.schema';
 import { Action } from '../casl.action';
 import { AppAbility, CaslAbilityFactory } from '../casl/casl-ability.factory';
@@ -78,6 +80,12 @@ export class ManageOrdersPolicyHandler implements IPolicyHandler {
 
 export class ManagePaymentPolicyHandler implements IPolicyHandler {
   handle(ability: AppAbility) {
-    return ability.can(Action.Manage, Order);
+    return ability.can(Action.Manage, Payment);
+  }
+}
+
+export class ManagePaymentMethodPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility) {
+    return ability.can(Action.Manage, PaymentMethod);
   }
 }

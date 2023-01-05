@@ -3,6 +3,7 @@ import { Document, SchemaTypes } from 'mongoose';
 import { DefaultSchema } from './default.shema';
 
 export type AddressDocument = Address & Document;
+export type PartialAddress = Partial<AddressDocument>;
 
 @Schema()
 export class Address extends DefaultSchema {
@@ -19,7 +20,7 @@ export class Address extends DefaultSchema {
   streetAddress: string;
 
   @Prop(String)
-  aptAddress: string;
+  aptAddress?: string;
 
   @Prop(String)
   city: string;
@@ -33,7 +34,7 @@ export class Address extends DefaultSchema {
   @Prop(String)
   phoneNumber: string;
 
-  @Prop(String)
+  @Prop(Boolean)
   isSelected: boolean = false;
 }
 

@@ -9,8 +9,9 @@ import { Cart } from "src/schemas/cart.schema";
 import { Payment } from "src/schemas/payment.schema";
 import { Delivery } from "src/schemas/delivery.schema";
 import { Address } from "src/schemas/address.schema";
+import { PaymentMethod } from "src/schemas/paymentMethod.schema";
 
-type Subjects = InferSubjects<typeof Product | typeof User | typeof Order | typeof Cart | typeof Payment | typeof Delivery | typeof Address> | 'all';
+type Subjects = InferSubjects<typeof Product | typeof User | typeof Order | typeof Cart | typeof Payment | typeof PaymentMethod | typeof Delivery | typeof Address> | 'all';
 type Abilities = [Action, Subjects];
 export type AppAbility = MongoAbility<Abilities>;
 

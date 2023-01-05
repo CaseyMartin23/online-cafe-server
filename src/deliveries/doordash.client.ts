@@ -75,7 +75,6 @@ export class DoordashClient {
       expiresIn: 1800,
     } as unknown;
     const token = sign(data, secret, options);
-    console.log({ token, data });
     return token;
   }
 

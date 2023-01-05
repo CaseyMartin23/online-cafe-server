@@ -1,4 +1,4 @@
-import { IsString, IsPhoneNumber } from "class-validator";
+import { IsString, IsPhoneNumber, IsOptional } from "class-validator";
 
 export class CreateAddressDto {
   @IsString()
@@ -10,8 +10,9 @@ export class CreateAddressDto {
   @IsString()
   streetAddress: string;
   
+  @IsOptional()
   @IsString()
-  aptAddress: string;
+  aptAddress?: string | undefined;
   
   @IsString()
   city: string;
@@ -20,11 +21,8 @@ export class CreateAddressDto {
   state: string;
   
   @IsString()
-  country: string;
-  
-  @IsString()
   zip: string;
   
-  @IsPhoneNumber()
+  @IsPhoneNumber("US")
   phoneNumber: string;
 }
