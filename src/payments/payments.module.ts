@@ -18,5 +18,6 @@ import { DeliveriesModule } from 'src/deliveries/deliveries.module';
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

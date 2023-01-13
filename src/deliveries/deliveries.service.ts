@@ -31,22 +31,43 @@ export class DeliveriesService {
     }
   }
 
-  public async createPartialDelivery(userId: string, { orderId }: CreateDeliveryDto) {
+  public async createPartialDelivery(userId: string, orderId: string) {
     try {
       const userAddressResponse = await this.addressService.getSelectedUserAddress(userId);
-      const selectedAddressId = userAddressResponse.data.items[0]._id.toString();
+      const selectedAddressId = userAddressResponse.data.items[0].id.toString();
       const selectedUserAddress = await this.addressService.validateAddress(selectedAddressId)
+      const dateUpdated = new Date();
+
+      // check if address exist order
+      // else create a new one
+      const { data: currentOrderData } = await this.orderService.findOne(userId, orderId);
+      const currentOrder = currentOrderData.items[0];
+      const currentDeliveryId = currentOrder.deliveryId;
+      
+      if(currentDeliveryId) {
+        const currentDeliveryData = await this.getUserDelivery(userId, currentDeliveryId);
+        const currentDelivery = currentDeliveryData.data.items[0];
+        const addressesAreEqual = currentDelivery.addressId.toString() === selectedAddressId;
+  
+        if(addressesAreEqual && currentDelivery.status === DeliveryStatus.Partial) {
+          throw new HttpException({
+            status: HttpStatus.CONFLICT,
+            error: "Delivery already exists",
+          }, HttpStatus.CONFLICT);
+        }
+      }
+
       const newDelivery = await this.deliverModel.create({
         type: this.deliveryType,
         userId,
         addressId: selectedUserAddress.id,
         status: DeliveryStatus.Partial,
+        dateCreated: dateUpdated,
+        dateUpdated: dateUpdated,
       })
-      const parsedDelivery = this.parseDelivery(newDelivery);
       await this.orderService.update(userId, orderId, { deliveryId: newDelivery.id });
-      return responseHandler(true, { items: parsedDelivery });
+      return responseHandler(true, { message: "Successfully created delivery" });
     } catch (err) {
-      console.error(err);
       return responseHandler(false, err)
     }
   }

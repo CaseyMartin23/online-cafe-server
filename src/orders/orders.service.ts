@@ -19,7 +19,7 @@ export class OrdersService {
     try {
       let userOrder = null;
       const foundUserOrder = await this.orderModel.findOne({ userId, status: OrderStatuses.Partial });
-      
+
       if(!foundUserOrder) {
         userOrder = await this.createPartialUserOrder(userId);
       } else {
@@ -33,13 +33,27 @@ export class OrdersService {
     }
   }
 
-  public async findAll() {
-    return `This action returns all orders`;
+  public async findAll(userId: string) {
+    try {
+      const foundUserOrders = await this.orderModel.find({ userId });
+      
+      if(foundUserOrders.length < 1){
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: "No order found.",
+        }, HttpStatus.NOT_FOUND);
+      }
+
+      const parsedOrders = this.parseOrders(foundUserOrders);
+      return responseHandler(true, { items: parsedOrders });
+    } catch (err) {
+      return responseHandler(false, err);
+    }
   }
 
   public async findOne(userId: string, id: string) {
     try {
-      const foundUserOrder = await this.orderModel.findOne({ id, userId })
+      const foundUserOrder = await this.orderModel.findOne({ id, userId });
       
       if(!foundUserOrder){
         throw new HttpException({
@@ -94,7 +108,7 @@ export class OrdersService {
     const createdOrder = await this.orderModel.create({
       userId,
       status: OrderStatuses.Partial,
-      cartId: userCart._id.toString(),
+      cartId: userCart.id,
       dateCreated: new Date(),
       dateUpdated: new Date(),
     })
@@ -104,8 +118,8 @@ export class OrdersService {
   private parseOrders(rawOrders: OrderDocument | OrderDocument[]) {
     const rawOrdersArray = Array.isArray(rawOrders) ? rawOrders : [rawOrders];
     const parsedOrders = rawOrdersArray.map((order) => {
-      const { userId, ...rest } = order.toObject();
-      return rest as CartDocument;
+      const { userId, _id, ...rest } = order.toObject();
+      return { ...rest, id: _id } as CartDocument;
     })
     return parsedOrders
   }

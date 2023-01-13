@@ -3,6 +3,7 @@ import { Document, SchemaTypes } from 'mongoose';
 import { DefaultSchema } from './default.shema';
 
 export enum PaymentStatus {
+  Partial = "Partial",
   Incomplete = "incomplete",
   Complete = "complete",
   Exception = "exception",
@@ -16,7 +17,7 @@ export class Payment extends DefaultSchema {
   userId: string;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'PaymentMethod' })
-  methodId: string;
+  paymentMethodId: string;
 
   @Prop({ type: String, enum: PaymentStatus })
   status: PaymentStatus;

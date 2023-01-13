@@ -13,9 +13,9 @@ import { UpdateDeliveryDto } from './dto/updateDelivery.dto';
 export class DeliveriesController {
   constructor(private readonly deliveriesService: DeliveriesService) {}
 
-  @Post()
-  public async create(@Request() req: any, @Body() createDelivery: CreateDeliveryDto) {
-    return await this.deliveriesService.createPartialDelivery(req.user.sub, createDelivery);
+  @Post('order/:id')
+  public async create(@Request() req: any, @Param('id') orderId: string) {
+    return await this.deliveriesService.createPartialDelivery(req.user.sub, orderId);
   }
 
   @Post('quote/:id')

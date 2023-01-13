@@ -16,8 +16,8 @@ export class OrdersController {
   }
 
   @Get()
-  public async findAll() {
-    return await this.ordersService.findAll();
+  public async findAll(@Request() req: any) {
+    return await this.ordersService.findAll(req.user.sub);
   }
 
   @Get(':id')
